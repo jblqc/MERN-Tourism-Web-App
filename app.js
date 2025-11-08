@@ -10,15 +10,17 @@ const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const AppError = require('./utils/appError');
 const errorController = require('./controllers/errorController');
-
+const compression = require('compression');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const dotenv = require('dotenv');
+dotenv.config({ path: './config.env' });
 
 const app = express();
-
+app.enable('trust proxy');
 // View engine
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -116,14 +118,16 @@ app.use(
     ],
   }),
 );
-
-// ✅ CORS setup
+app.use(compression());
 const allowedOrigins = [process.env.APP_URL || 'http://localhost:3000'];
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors());
+app.options('*', cors());
 
 // Custom middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  res.locals.STRIPE_PUBLIC_KEY = process.env.STRIPE_PUBLIC_KEY;
+
   next();
 });
 

@@ -3,7 +3,6 @@ import axios from 'axios';
 import { showAlert } from './alerts';
 
 export const login = async (email, password) => {
-  console.log(email, password);
   try {
     const res = await axios({
       method: 'POST',
@@ -23,7 +22,8 @@ export const login = async (email, password) => {
     }
   } catch (err) {
     console.error('Login error:', err);
-    const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+    const msg =
+      err.response?.data?.message || 'Something went wrong. Please try again.';
     showAlert('error', msg);
   }
 };

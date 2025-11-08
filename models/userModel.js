@@ -65,7 +65,10 @@ userSchema.pre('save', async function (next) {
   this.passwordChangedAt = Date.now() - 1000;
   next();
 });
-userSchema.methods.isValidPassword = async function (candidatePassword, userPassword) {
+userSchema.methods.isValidPassword = async function (
+  candidatePassword,
+  userPassword,
+) {
   return bcrypt.compare(candidatePassword, userPassword);
 };
 userSchema.pre(/^find/, function (next) {
@@ -75,8 +78,10 @@ userSchema.pre(/^find/, function (next) {
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
-    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
-    console.log(changedTimestamp, JWTTimestamp);
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10,
+    );
     return JWTTimestamp < changedTimestamp; //means nabago!
   }
   //false means di pinalitan so goods
@@ -86,7 +91,10 @@ userSchema.methods.createPasswordResetToken = function () {
   //create token to br sent in user email
   const resetToken = crypto.randomBytes(32).toString('hex');
   //get restToken and hash it so kahit visible sa db safe final result is passwordResetToken
-  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
   //token expires after 10 mins
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   //we send the raw token

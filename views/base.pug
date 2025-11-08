@@ -10,6 +10,8 @@ html
             link( href="https://fonts.googleapis.com/css?family=Lato:300,300i,700"
                 rel="stylesheet")
             script(src='https://js.stripe.com/v3/')
+            script.
+                const stripe = Stripe("#{STRIPE_PUBLIC_KEY}");
 
     body
         include header

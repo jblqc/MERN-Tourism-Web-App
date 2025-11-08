@@ -113,7 +113,7 @@ const tourSchema = new mongoose.Schema(
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ startLocation: '2dsphere' });
@@ -131,7 +131,6 @@ tourSchema.virtual('reviews', {
 //#this means currently saved document
 //#runs before the document is saved
 tourSchema.pre('save', function (next) {
-  console.log(this);
   this.slug = slug(this.name, { lower: true });
   next();
 });
@@ -143,7 +142,6 @@ tourSchema.pre('save', function (next) {
 
 // // runs after the document is saved
 // tourSchema.post('save', function (doc) {
-//     console.log(doc);
 //     next();
 
 // });
@@ -167,7 +165,7 @@ tourSchema.pre(/^find/, function (next) {
 });
 
 tourSchema.post(/^find/, function (docs, next) {
-  console.log('CUrrent query took', Date.now() - this.start, 'ms');
+  console.log('Current query took', Date.now() - this.start, 'ms');
   next();
 });
 

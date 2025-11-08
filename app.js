@@ -3,52 +3,107 @@ const cors = require('cors');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const { helmet } = require('./public/js/helmet');
+const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 const AppError = require('./utils/appError');
 const errorController = require('./controllers/errorController');
+
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
-const cookieParser = require('cookie-parser');
+const bookingRouter = require('./routes/bookingRoutes');
+
 const app = express();
 
+// View engine
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
-// 1. MIDLLEWARES
-//serving sttaicc files
+// Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-//security middlewares for http
-app.use(helmet);
-//dev logging
+// 🔒 Security Middlewares
+app.use(helmet()); // base protection
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-eval'", // 🧩 allow Parcel’s eval() scripts
+        "'unsafe-inline'", // 🧩 allow inline bootstrap for HMR
+        'https://js.stripe.com',
+        'https://api.mapbox.com',
+        'https://cdnjs.cloudflare.com',
+        'blob:',
+      ],
+      scriptSrcElem: [
+        "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        'https://js.stripe.com',
+        'https://api.mapbox.com',
+        'https://cdnjs.cloudflare.com',
+        'blob:',
+      ],
+      styleSrc: [
+        "'self'",
+        'https://api.mapbox.com',
+        'https://fonts.googleapis.com',
+        "'unsafe-inline'",
+      ],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      imgSrc: [
+        "'self'",
+        'data:',
+        'https://api.mapbox.com',
+        'https://events.mapbox.com',
+      ],
+      connectSrc: [
+        "'self'",
+        'https://api.mapbox.com',
+        'https://events.mapbox.com',
+        'https://js.stripe.com',
+        'https://r.stripe.com',
+        'http://localhost:*',
+        'ws://localhost:*',
+        'ws://127.0.0.1:*',
+      ],
+      frameSrc: ["'self'", 'https://js.stripe.com'],
+      workerSrc: ["'self'", 'blob:'],
+    },
+  }),
+);
+
+// Logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-//100 req per hourlimit req
-const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 1000,
-  message: 'Too many request from this IP, please try again in an hour!',
-});
-app.use('/api', limiter);
-//body parser, reading data from body into req.body
+
+// Rate Limiting
 app.use(
-  express.json({
-    limit: '10kb',
-  })
+  '/api',
+  rateLimit({
+    max: 100,
+    windowMs: 60 * 60 * 1000,
+    message: 'Too many requests from this IP, please try again in an hour!',
+  }),
 );
+
+// Body parser
+app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
-//data sanitization again nosql query injection and
+
+// Data sanitization
 app.use(mongoSanitize());
-//data sanitization for xss
 app.use(xss());
-//prevent parameter pollution
+
+// Prevent parameter pollution
 app.use(
   hpp({
     whitelist: [
@@ -59,29 +114,31 @@ app.use(
       'difficulty',
       'price',
     ],
-  })
-);
-const allowedOrigins = [process.env.APP_URL];
-
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
+  }),
 );
 
-//test middleswares
+// ✅ CORS setup
+const allowedOrigins = [process.env.APP_URL || 'http://localhost:3000'];
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+
+// Custom middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
+
+// Routers
 app.use('/', viewRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/booking', bookingRouter);
 
+// Handle unhandled routes
 app.all('*', (req, res, next) => {
-  next(new AppError(`Cant find ${req.originalUrl} on this server`, 404));
+  next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
+
 app.use(errorController);
+
 module.exports = app;

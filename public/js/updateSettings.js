@@ -5,7 +5,10 @@ import { showAlert } from './alerts';
 // type can be 'password' or 'data'
 export const updateSettings = async (data, type) => {
   try {
-    const url = type === 'password' ? '/api/v1/users/updateMyPassword' : '/api/v1/users/updateMe';
+    const url =
+      type === 'password'
+        ? '/api/v1/users/updateMyPassword'
+        : '/api/v1/users/updateMe';
 
     const res = await axios({
       method: 'PATCH',
@@ -22,21 +25,8 @@ export const updateSettings = async (data, type) => {
     }
   } catch (err) {
     console.error('Update error:', err);
-    const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+    const msg =
+      err.response?.data?.message || 'Something went wrong. Please try again.';
     showAlert('error', msg);
-  }
-};
-
-export const logout = async () => {
-  try {
-    const res = await axios({
-      method: 'GET',
-      url: '/api/v1/users/logout',
-      withCredentials: true,
-    });
-    if (res.data.status === 'success') location.reload(true);
-  } catch (err) {
-    console.error(err.response);
-    showAlert('error', 'Error logging out! Try again.');
   }
 };

@@ -15,46 +15,124 @@ import {
   IconButton,
   Divider,
   useColorModeValue,
-} from '@chakra-ui/react';
+  useToast,
+} from "@chakra-ui/react";
+
 import {
   FiEye,
   FiEyeOff,
   FiArrowLeft,
   FiArrowRight,
   FiHeart,
-} from 'react-icons/fi';
-import { useState } from 'react';
+} from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
+import { Md123, MdSms } from "react-icons/md";
+
+import { useState } from "react";
+import { useAuth } from "../hooks/useAuth"; // ✅ Use FINAL hook
+import { useToastMessage } from "../utils/toast";
+import { useNavigate } from "react-router-dom"; // ✅ Correct redirect
 
 export default function AuthPage() {
+  const toast = useToast();
+  const navigate = useNavigate();
+
+  const { login, signup, loading } = useAuth();
+  const { showSuccess, showError } = useToastMessage();
+
   const [isLogin, setIsLogin] = useState(true);
   const [showPass, setShowPass] = useState(false);
   const [bgIndex, setBgIndex] = useState(1);
-  const bg = useColorModeValue('gray.50', 'gray.900');
+
+  // Form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
 
   const toggleBg = (dir) => {
     setBgIndex((prev) => {
-      const next = dir === 'next' ? prev + 1 : prev - 1;
+      const next = dir === "next" ? prev + 1 : prev - 1;
       if (next > 3) return 1;
       if (next < 1) return 3;
       return next;
     });
   };
 
+  // -------------------------------------------------
+  // LOGIN
+  // -------------------------------------------------
+  const handleLogin = async () => {
+    try {
+      const res = await login(email, password);
+
+      const userName = res?.data?.user?.name || "Traveler";
+
+      showSuccess("Login Successful!", `Welcome back, ${userName}`);
+
+      setTimeout(() => navigate("/"), 1500);
+    } catch (err) {
+      showError(
+        "Login Failed",
+        err?.response?.data?.message || "Invalid email or password."
+      );
+    }
+  };
+  // -------------------------------------------------
+  // SIGNUP
+  // -------------------------------------------------
+  const handleSignup = async () => {
+    try {
+      const body = { name, email, password, passwordConfirm: password };
+
+      const res = await signup(body); // ← matches FINAL store
+
+      toast({
+        position: "top",
+        duration: 2500,
+        isClosable: true,
+        render: () => (
+          <GlassAlert status="success" title="Welcome!">
+            Account created successfully 🎉
+          </GlassAlert>
+        ),
+      });
+
+      setTimeout(() => navigate("/"), 1800);
+    } catch (err) {
+      toast({
+        position: "top",
+        duration: 3500,
+        isClosable: true,
+        render: () => (
+          <GlassAlert status="error" title="Signup Failed">
+            {err?.response?.data?.message || "Please try again."}
+          </GlassAlert>
+        ),
+      });
+    }
+  };
+
   return (
     <Flex
-      minH="100vh"
-      bgGradient="linear(to-br, teal.500, green.400)" // or solid bg
+      h="100vh"
       align="center"
       justify="center"
-      p={8} // space from edges of viewport
+      p={8}
+      bgImage="url('/img/login_bg.png')"
+      // bgSize="cover"
+      // bg="linear-gradient( 359.5deg,  rgba(115,122,205,1) 8.8%, rgba(186,191,248,1) 77.4% );"
+      bgPosition="center"
+      bgRepeat="no-repeat"
+      position="relative"
     >
       <Grid
-        templateColumns={['1fr', null, '1fr 1fr']}
-        h="80vh"
-        w={['95%', '85%', '80%', '70%']} // responsive width
+        templateColumns={["1fr", null, "1fr 1fr"]}
+        h="70vh"
+        w={["95%", "90%", "80%", "60%"]}
         bg="white"
-        borderRadius="3xl" // use 3xl instead of full for smoother corners
-        overflow="hidden" // ensures inner elements don’t spill
+        borderRadius="3xl"
+        overflow="hidden"
+        mt="5%"
         boxShadow="2xl"
       >
         {/* LEFT PANEL */}
@@ -77,16 +155,16 @@ export default function AuthPage() {
             {/* Toggle */}
             <HStack
               justify="center"
-              bg={useColorModeValue('gray.100', 'gray.700')}
+              bg={useColorModeValue("gray.100", "gray.700")}
               borderRadius="full"
               p={1.5}
-              boxShadow="inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.6)"
             >
               <Button
                 flex="1"
                 borderRadius="full"
-                bg={isLogin ? 'white' : 'transparent'}
-                boxShadow={isLogin ? 'md' : 'none'}
+                color={isLogin ? "white" : "blackAlpha.500"}
+                colorScheme={isLogin ? "purple" : "transparent"}
+                boxShadow={isLogin ? "md" : "none"}
                 onClick={() => setIsLogin(true)}
               >
                 Login
@@ -94,35 +172,34 @@ export default function AuthPage() {
               <Button
                 flex="1"
                 borderRadius="full"
-                bg={!isLogin ? 'white' : 'transparent'}
-                boxShadow={!isLogin ? 'md' : 'none'}
+                color={!isLogin ? "white" : "blackAlpha.500"}
+                colorScheme={!isLogin ? "purple" : "transparent"}
+                boxShadow={!isLogin ? "md" : "none"}
                 onClick={() => setIsLogin(false)}
               >
                 Sign Up
               </Button>
             </HStack>
 
-            {/* Form content */}
+            {/* ------------------------------------------------- */}
+            {/* LOGIN FORM */}
+            {/* ------------------------------------------------- */}
             {isLogin ? (
               <VStack align="stretch" spacing={5}>
                 <Heading size="md" textAlign="center">
                   Journey Begins
                 </Heading>
-                <Text fontSize="sm" color="gray.500" textAlign="center">
-                  Choose a login method:
-                </Text>
 
                 <HStack spacing={3} justify="center">
-                  <Button
-                    leftIcon={
-                      <img src="/img/icons/google.svg" alt="" width={18} />
-                    }
-                    variant="outline"
-                  >
+                  <Button leftIcon={<FcGoogle size={22} />} variant="outline">
                     Gmail
                   </Button>
-                  <Button variant="outline">Email Code</Button>
-                  <Button variant="outline">SMS Code</Button>
+                  <Button leftIcon={<Md123 size={22} />} variant="outline">
+                    Email Code
+                  </Button>
+                  <Button leftIcon={<MdSms size={22} />} variant="outline">
+                    SMS Code
+                  </Button>
                 </HStack>
 
                 <HStack my={2}>
@@ -137,12 +214,17 @@ export default function AuthPage() {
                   placeholder="Email address"
                   size="lg"
                   borderRadius="lg"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
+
                 <InputGroup size="lg">
                   <Input
                     placeholder="Password"
-                    type={showPass ? 'text' : 'password'}
+                    type={showPass ? "text" : "password"}
                     borderRadius="lg"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <InputRightElement>
                     <IconButton
@@ -152,34 +234,49 @@ export default function AuthPage() {
                     />
                   </InputRightElement>
                 </InputGroup>
-                <Text
-                  fontSize="sm"
-                  color="teal.500"
-                  textAlign="right"
-                  cursor="pointer"
+
+                <Button
+                  colorScheme="purple"
+                  size="lg"
+                  borderRadius="lg"
+                  isLoading={loading}
+                  onClick={handleLogin}
                 >
-                  Forgot Password?
-                </Text>
-                <Button colorScheme="teal" size="lg" borderRadius="lg">
                   Log In
                 </Button>
               </VStack>
             ) : (
+              /* ------------------------------------------------- */
+              /* SIGNUP FORM */
+              /* ------------------------------------------------- */
               <VStack align="stretch" spacing={5}>
                 <Heading size="md" textAlign="center">
                   Create Your Account
                 </Heading>
-                <Input placeholder="Full Name" size="lg" borderRadius="lg" />
+
+                <Input
+                  placeholder="Full Name"
+                  size="lg"
+                  borderRadius="lg"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+
                 <Input
                   placeholder="Email address"
                   size="lg"
                   borderRadius="lg"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
+
                 <InputGroup size="lg">
                   <Input
                     placeholder="Password"
-                    type={showPass ? 'text' : 'password'}
+                    type={showPass ? "text" : "password"}
                     borderRadius="lg"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <InputRightElement>
                     <IconButton
@@ -189,7 +286,14 @@ export default function AuthPage() {
                     />
                   </InputRightElement>
                 </InputGroup>
-                <Button colorScheme="teal" size="lg" borderRadius="lg">
+
+                <Button
+                  colorScheme="purple"
+                  size="lg"
+                  borderRadius="lg"
+                  isLoading={loading}
+                  onClick={handleSignup}
+                >
                   Sign Up
                 </Button>
               </VStack>
@@ -202,64 +306,45 @@ export default function AuthPage() {
           position="relative"
           overflow="hidden"
           bg={`url(/img/lbg-${bgIndex}.jpg) center/cover no-repeat`}
-          clipPath="path('M0,0 h100% v100% q-30,0 -60,30 t-60,60 v-100% h-100% z')" // decorative shape
+          clipPath="path('M0,0 h100% v100% q-30,0 -60,30 t-60,60 v-100% h-100% z')"
         >
-          {/* Overlay text box */}
           <Box
             position="absolute"
             top="6"
-            right="20" // ✅ stick to rightmost edge
-            transform="translateX(22%)" // small visual push out for balance
+            right="20"
+            transform="translateX(15%)"
           >
             <Box
-              position="relative"
-              bg="white"
+              bg="whiteAlpha.900"
               p={6}
               borderRadius="2xl"
               shadow="xl"
               w="260px"
-              clipPath="path('M0 0 h240 a8 10 40 40 1 40 20 v60 a20 20 0 0 1 -20 20 h-240 a20 20 0 0 1 -20 -20 v-60 a20 20 0 0 1 20 -20 z M240 40 a20 20 0 1 0 0.01 0')"
-              // 👆 creates the inverted circle notch on the right edge
+              position="relative"
             >
-              {/* soft faded layer behind */}
-              <Box
-                position="absolute"
-                inset="0"
-                borderRadius="2xl"
-                bg="whiteAlpha.400"
-                transform="translate(8px,8px)"
-                zIndex={-1}
-                filter="blur(3px)"
-              />
-
               <Heading fontSize="md" mb={2}>
                 Wander, Explore, Experience.
               </Heading>
               <Text fontSize="sm" color="gray.600">
-                Discover new places, embrace adventures, & create unforgettable
-                travel memories worldwide.
+                Discover new places, embrace adventures, & create memorable
+                journeys.
               </Text>
 
-              {/* Heart circle overlay */}
               <Box
                 position="absolute"
-                top="50%"
-                right="-25px" // ✅ perfectly overlaps the notch
+                top="18%"
+                right="-15px"
                 transform="translateY(-50%)"
                 bg="white"
                 borderRadius="full"
                 p="3"
-                shadow="md"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
+                shadow="lg"
               >
                 <FiHeart color="red" />
               </Box>
             </Box>
           </Box>
 
-          {/* Bottom-right quote */}
           <Box
             position="absolute"
             bottom="10"
@@ -268,8 +353,7 @@ export default function AuthPage() {
             textAlign="right"
           >
             <Heading fontSize="xl" mb={3}>
-              Escape the Ordinary, <br />
-              Embrace the Journey!
+              Escape the Ordinary, <br /> Embrace the Journey
             </Heading>
             <Box
               bg="rgba(255,255,255,0.15)"
@@ -283,19 +367,18 @@ export default function AuthPage() {
             </Box>
           </Box>
 
-          {/* Left/right arrows */}
           <HStack position="absolute" bottom="8" left="8" spacing={4}>
             <IconButton
               icon={<FiArrowLeft />}
               variant="ghost"
               color="white"
-              onClick={() => toggleBg('prev')}
+              onClick={() => toggleBg("prev")}
             />
             <IconButton
               icon={<FiArrowRight />}
               variant="ghost"
               color="white"
-              onClick={() => toggleBg('next')}
+              onClick={() => toggleBg("next")}
             />
           </HStack>
         </GridItem>

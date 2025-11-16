@@ -1,6 +1,10 @@
-import axiosClient from './axiosClient';
+import axiosClient from "./axiosClient";
 
-export const bookTour = async (tourId) => {
-  const session = await axiosClient.get(`/booking/checkout-session/${tourId}`);
-  window.location.href = session.data.url;
+export const getBookings = async () => {
+  const res = await axiosClient.get("/booking");
+  return res.data.data.bookings;
+};
+
+export const deleteBooking = async (id) => {
+  return axiosClient.delete(`/booking/${id}`);
 };

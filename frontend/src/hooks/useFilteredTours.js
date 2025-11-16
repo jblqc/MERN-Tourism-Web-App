@@ -1,8 +1,8 @@
 // src/hooks/useFilteredTours.js
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
-export const useFilteredTours = (tours, filters) => {
-  return useMemo(() => {
+export const useFilteredTours = (tours, filters) =>
+  useMemo(() => {
     return tours.filter((tour) => {
       if (filters.city && tour.startLocation?.description !== filters.city)
         return false;
@@ -11,4 +11,3 @@ export const useFilteredTours = (tours, filters) => {
       return true;
     });
   }, [tours, filters]);
-};

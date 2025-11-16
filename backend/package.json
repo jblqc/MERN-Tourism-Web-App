@@ -4,7 +4,7 @@
   "description": "Natours backend API server",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run watch:js\" \"nodemon server.js\"",
+    "dev": "npx nodemon server.js",
     "start:prod": "cross-env NODE_ENV=production nodemon server.js",
     "debug": "ndb server.js",
     "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",

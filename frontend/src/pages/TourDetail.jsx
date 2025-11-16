@@ -1,3 +1,4 @@
+// src/pages/TourDetail.jsx
 import {
   Box,
   Grid,
@@ -17,12 +18,14 @@ import {
   useColorModeValue,
   Badge,
   Icon,
-} from '@chakra-ui/react';
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { bookTour } from '../api/bookingApi';
-import { useTourStore } from '../store/useTourStore';
-import { useReviewStore } from '../store/useReviewStore';
+} from "@chakra-ui/react";
+
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getBookings } from "../api/bookingApi";
+import { useTour } from "../hooks/useTours";
+import { useReviewStore } from "../store/useReviewStore";
+
 import {
   FiClock,
   FiUsers,
@@ -30,47 +33,57 @@ import {
   FiCheck,
   FiInfo,
   FiMapPin,
-} from 'react-icons/fi';
-import MapBox from './MapBox';
-import ReviewCard from '../components/ReviewCard';
+} from "react-icons/fi";
+
+import MapBox from "./MapBox";
+import ReviewCard from "../components/ReviewCard";
+import { useReviews } from "../hooks/useReviews";
 
 export default function TourDetail() {
   const { slug } = useParams();
+
+  const {
+    tour,
+    tours,
+    fetchTourBySlug,
+    setCurrentTour,
+    loading: tourLoading,
+  } = useTour(); // ✅ unified hook
+
+  const { reviews, fetchReviewsByTour, loading: reviewLoading } = useReviews();
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Zustand store hooks
-  const {
-    tours,
-    currentTour: tour,
-    setCurrentTour,
-    fetchTour,
-    loading: tourLoading,
-  } = useTourStore();
+  const bg = useColorModeValue("gray.50", "gray.900");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.700", "gray.200");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  const { reviews, fetchReviews, loading: reviewLoading } = useReviewStore();
-
-  const bg = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const textColor = useColorModeValue('gray.700', 'gray.200');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-
+  // src/pages/TourDetail.jsx
   useEffect(() => {
     if (!slug) return;
 
-    // ✅ Prefer existing tour from store
-    const cachedTour = tours?.find((t) => t.slug === slug);
+    // Wait for persisted tours hydration
+    if (tours.length === 0) return;
 
-    if (cachedTour) {
-      setCurrentTour(cachedTour);
-      fetchReviews(cachedTour._id);
-    } else {
-      // fallback if direct URL
-      fetchTour(slug).then((freshTour) => {
-        if (freshTour?._id) fetchReviews(freshTour._id);
-      });
+    const cached = tours.find((t) => t.slug === slug);
+
+    if (cached) {
+      setCurrentTour(cached);
+      fetchReviewsByTour(cached._id);
+      return;
     }
-  }, [slug, tours, fetchTour, fetchReviews, setCurrentTour]);
 
+    // Fallback: Fetch via slug
+    fetchTourBySlug(slug).then((tourFromApi) => {
+      if (tourFromApi?._id) {
+        fetchReviewsByTour(tourFromApi._id);
+      }
+    });
+  }, [slug, tours]);
+
+  // ---------------------------------------
+  // LOADING STATES
+  // ---------------------------------------
   if (tourLoading || reviewLoading)
     return (
       <VStack py={20}>
@@ -81,6 +94,9 @@ export default function TourDetail() {
 
   if (!tour) return <Text textAlign="center">Tour not found.</Text>;
 
+  // ---------------------------------------
+  // SMALL COMPONENT
+  // ---------------------------------------
   const InfoBox = ({ icon, color, title, value }) => (
     <Box
       bg={cardBg}
@@ -116,7 +132,7 @@ export default function TourDetail() {
   return (
     <Box bg={bg}>
       {/* HEADER IMAGE */}
-      <Box position="relative" h={['300px', '400px', '500px']}>
+      <Box position="relative" h={["300px", "400px", "500px"]}>
         <Image
           src={tour.imageCover}
           alt={tour.name}
@@ -149,9 +165,9 @@ export default function TourDetail() {
       </Box>
 
       <Container maxW="7xl" py={12}>
-        <Grid templateColumns={['1fr', null, '2fr 1fr']} gap={10}>
+        <Grid templateColumns={["1fr", null, "2fr 1fr"]} gap={10}>
           <GridItem>
-            {/* About */}
+            {/* ABOUT */}
             <Box bg={cardBg} boxShadow="sm" borderRadius="lg" p={8} mb={8}>
               <Heading fontSize="xl" mb={3}>
                 About This Tour
@@ -161,7 +177,7 @@ export default function TourDetail() {
               </Text>
             </Box>
 
-            {/* Info Boxes */}
+            {/* INFO BOXES */}
             <SimpleGrid columns={[1, 3]} spacing={6} mb={8}>
               <InfoBox
                 icon={FiClock}
@@ -179,31 +195,27 @@ export default function TourDetail() {
                 icon={FiStar}
                 color="purple"
                 title="Difficulty"
-                value={
-                  tour.difficulty.charAt(0).toUpperCase() +
-                  tour.difficulty.slice(1)
-                }
+                value={tour.difficulty}
               />
             </SimpleGrid>
 
-            {/* Highlights */}
+            {/* HIGHLIGHTS */}
             <Box bg={cardBg} boxShadow="sm" borderRadius="lg" p={8} mb={8}>
               <Heading fontSize="xl" mb={4}>
                 Tour Highlights
               </Heading>
               <SimpleGrid columns={[1, 2]} spacing={3}>
                 {[
-                  'Inca Trail',
-                  'High mountain passes',
-                  'Machu Picchu sunrise',
-                  'Andean food',
+                  "Inca Trail",
+                  "High mountain passes",
+                  "Machu Picchu sunrise",
+                  "Andean food",
                 ].map((highlight, i) => (
                   <HStack
                     key={i}
                     bg="gray.50"
                     borderRadius="md"
                     p={3}
-                    boxShadow="xs"
                     spacing={3}
                   >
                     <Box
@@ -218,15 +230,13 @@ export default function TourDetail() {
                     >
                       <Icon as={FiCheck} />
                     </Box>
-                    <Text fontSize="md" color={textColor}>
-                      {highlight}
-                    </Text>
+                    <Text color={textColor}>{highlight}</Text>
                   </HStack>
                 ))}
               </SimpleGrid>
             </Box>
 
-            {/* Guides */}
+            {/* GUIDES */}
             <Box bg={cardBg} boxShadow="sm" borderRadius="lg" p={8} mb={8}>
               <Heading fontSize="xl" mb={4}>
                 Your Guides
@@ -238,7 +248,7 @@ export default function TourDetail() {
                     <VStack align="flex-start" spacing={0}>
                       <Text fontWeight="bold">{g.name}</Text>
                       <Text fontSize="sm" color="gray.500">
-                        {g.role === 'lead-guide' ? 'Lead Guide' : 'Tour Guide'}
+                        {g.role === "lead-guide" ? "Lead Guide" : "Tour Guide"}
                       </Text>
                     </VStack>
                   </HStack>
@@ -246,27 +256,23 @@ export default function TourDetail() {
               </Stack>
             </Box>
 
-            {/* Gallery */}
+            {/* GALLERY */}
             <SimpleGrid columns={[1, 2, 3]} spacing={4} mb={8}>
               {tour.images?.map((img, i) => (
                 <Image
                   key={img}
                   src={img}
                   alt={`${tour.name}-${i}`}
-                  w="100%" // full width per grid cell
-                  h="210px" // fixed height for uniform layout
-                  objectFit="cover" // crops and centers image nicely
+                  w="100%"
+                  h="210px"
+                  objectFit="cover"
                   borderRadius="lg"
                   shadow="md"
-                  _hover={{
-                    transform: 'scale(1.03)',
-                    transition: 'transform 0.3s ease',
-                  }}
                 />
               ))}
             </SimpleGrid>
 
-            {/* Map */}
+            {/* MAP */}
             <Box bg={cardBg} boxShadow="sm" borderRadius="lg" p={8} mb={8}>
               <Heading fontSize="xl" mb={4}>
                 Tour Location
@@ -274,7 +280,7 @@ export default function TourDetail() {
               <MapBox locations={tour.locations} />
             </Box>
 
-            {/* Reviews */}
+            {/* REVIEWS */}
             <Box bg={cardBg} boxShadow="sm" borderRadius="lg" p={8}>
               <HStack justify="space-between" mb={4}>
                 <HStack>
@@ -286,11 +292,12 @@ export default function TourDetail() {
                 <HStack>
                   <Icon as={FiStar} color="yellow.400" boxSize={5} />
                   <Text fontSize="xl" fontWeight="bold">
-                    {tour.ratingsAverage?.toFixed(1) || '4.9'}
+                    {tour.ratingsAverage?.toFixed(1) || "4.9"}
                   </Text>
                   <Text color="gray.500">/ 5</Text>
                 </HStack>
               </HStack>
+
               {reviews.length ? (
                 reviews.map((r) => <ReviewCard key={r._id} review={r} />)
               ) : (
@@ -299,7 +306,7 @@ export default function TourDetail() {
             </Box>
           </GridItem>
 
-          {/* Booking Sidebar */}
+          {/* BOOKING SIDEBAR */}
           <GridItem>
             <Box
               position="sticky"
@@ -310,7 +317,7 @@ export default function TourDetail() {
               p={8}
             >
               <Text fontSize="3xl" fontWeight="bold">
-                ${tour.price}{' '}
+                ${tour.price}{" "}
                 <Text
                   as="span"
                   fontWeight="medium"
@@ -326,21 +333,20 @@ export default function TourDetail() {
               </Text>
               <VStack mt={4} spacing={3} align="stretch">
                 {tour.startDates?.map((date) => {
-                  const formatted = new Date(date).toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
+                  const formatted = new Date(date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
                   });
                   const isSelected = selectedDate === date;
                   return (
                     <Button
                       key={date}
-                      bg={isSelected ? 'black' : 'white'}
-                      color={isSelected ? 'white' : 'gray.800'}
+                      bg={isSelected ? "black" : "white"}
+                      color={isSelected ? "white" : "gray.800"}
                       border="1px solid"
                       borderColor="gray.200"
-                      _hover={{ bg: isSelected ? 'black' : 'gray.100' }}
                       justifyContent="space-between"
                       rightIcon={isSelected ? <Icon as={FiCheck} /> : null}
                       onClick={() => setSelectedDate(date)}
@@ -357,10 +363,12 @@ export default function TourDetail() {
                 <Text color="gray.600">Duration</Text>
                 <Text fontWeight="medium">{tour.duration} days</Text>
               </HStack>
+
               <HStack justify="space-between" mb={2}>
                 <Text color="gray.600">Max Group Size</Text>
                 <Text fontWeight="medium">{tour.maxGroupSize} people</Text>
               </HStack>
+
               <HStack justify="space-between" mb={4}>
                 <Text color="gray.600">Difficulty</Text>
                 <Badge colorScheme="red" px={2}>
@@ -370,14 +378,14 @@ export default function TourDetail() {
 
               <Button
                 size="lg"
-                bg={!selectedDate ? 'gray.400' : 'black'}
+                bg={!selectedDate ? "gray.400" : "black"}
                 color="white"
                 w="100%"
                 isDisabled={!selectedDate}
-                _hover={!selectedDate ? {} : { bg: 'gray.800' }}
-                onClick={() => bookTour(tour._id, selectedDate)}
+                _hover={!selectedDate ? {} : { bg: "gray.800" }}
+                onClick={() => getBookings(tour._id, selectedDate)}
               >
-                {selectedDate ? 'Confirm Booking' : 'Select a Date First'}
+                {selectedDate ? "Confirm Booking" : "Select a Date First"}
               </Button>
 
               <VStack spacing={1} fontSize="sm" color="gray.500" mt={4}>

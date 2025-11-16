@@ -1,3 +1,4 @@
+// src/components/Header.jsx
 import {
   Box,
   Flex,
@@ -7,33 +8,47 @@ import {
   Avatar,
   HStack,
   Link as ChakraLink,
-} from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import GlassBox from './GlassBox';
+  Text,
+} from "@chakra-ui/react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { useEffect, useState } from "react";
 
 export default function Header() {
-  const { user, logout } = useAuth?.() || { user: null, logout: null };
+  const { user, isLoggedIn, logout } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50); // change threshold here
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <Box
-      bg="WHITE"
       px={8}
       py={4}
-      color="black"
-      boxShadow="md"
-      position="sticky"
+      position="fixed"
       top="0"
-      zIndex="100"
+      left="0"
+      w="100%"
+      zIndex="1000"
+      transition="0.3s ease"
+      bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
+      backdropFilter={scrolled ? "blur(10px)" : "none"}
+      boxShadow={scrolled ? "md" : "none"}
     >
       <Flex align="center">
-        {/* Left nav */}
+        {/* LEFT NAV */}
         <HStack spacing={6}>
           <ChakraLink
             as={Link}
             to="/"
             fontWeight="medium"
-            _hover={{ textDecoration: 'none', color: 'blue.200' }}
+            _hover={{ textDecoration: "none", color: "blue.300" }}
           >
             All Tours
           </ChakraLink>
@@ -41,40 +56,40 @@ export default function Header() {
 
         <Spacer />
 
-        {/* Center logo */}
+        {/* CENTER LOGO */}
         <Link to="/">
-          <Heading size="md" letterSpacing="wide">
+          <Heading size="md">
             <img
               src="/img/logo-white.png"
               alt="Natours logo"
-              style={{ height: '35px', margin: 'auto' }}
+              style={{ height: "35px" }}
             />
           </Heading>
         </Link>
 
         <Spacer />
 
-        {/* Right nav */}
+        {/* RIGHT NAV */}
         <HStack spacing={4}>
-          {user ? (
+          {isLoggedIn ? (
             <>
-              <Button
-                variant="outline"
-                colorScheme="whiteAlpha"
-                size="sm"
-                onClick={logout}
-              >
+              {/* LOGOUT BUTTON */}
+              <Button variant="ghost" size="sm" onClick={logout}>
                 Log out
               </Button>
+
+              {/* PROFILE LINK */}
               <Link to="/me">
-                <Flex align="center" gap={2}>
+                <Flex align="center" gap={2} cursor="pointer">
                   <Avatar
                     size="sm"
-                    name={user.name}
-                    src={`/img/users/${user.photo}`}
+                    name={user?.name}
+                    src={`${import.meta.env.VITE_BACKEND_URL}/img/users/${
+                      user.photo
+                    }`}
                     border="2px solid white"
                   />
-                  <Box>{user.name.split(' ')[0]}</Box>
+                  <Text fontWeight="medium">{user?.name?.split(" ")[0]}</Text>
                 </Flex>
               </Link>
             </>
@@ -84,17 +99,16 @@ export default function Header() {
                 as={Link}
                 to="/login"
                 size="sm"
-                colorScheme=""
-                variant="outline"
+                bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
               >
                 Log in
               </Button>
+
               <Button
                 as={Link}
                 to="/signup"
                 size="sm"
-                bg="white"
-                _hover={{ bg: 'blue.200' }}
+                bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
               >
                 Sign up
               </Button>

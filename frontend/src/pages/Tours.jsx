@@ -1,21 +1,13 @@
-import { useEffect, useState } from 'react';
-import { getAllTours } from '../api/tourApi';
-import TourCard from '../components/TourCard';
+import { useEffect } from "react";
+import { useTour } from "../hooks/useTours";
+import TourCard from "../components/TourCard";
 
 export default function Tours() {
-  const [tours, setTours] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { tours, loading, fetchTours } = useTour();
 
   useEffect(() => {
-    getAllTours()
-      .then((data) => {
-        setTours(data);
-      })
-      .catch((err) => {
-        console.error('Error fetching tours:', err);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    fetchTours();
+  }, [fetchTours]);
 
   if (loading) {
     return (

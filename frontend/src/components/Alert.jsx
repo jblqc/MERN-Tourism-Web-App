@@ -1,10 +1,18 @@
-import { useEffect } from 'react';
+import { Alert } from "@chakra-ui/react";
 
-export default function Alert({ type = 'success', message, onClose }) {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 5000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  return <div className={`alert alert--${type}`}>{message}</div>;
+export default function ToastAlert({ status = "info", children }) {
+  return (
+    <Alert.Root
+      status={status}
+      borderRadius="md"
+      p={4}
+      bg="white"
+      color="gray.800"
+      boxShadow="md"
+      width="auto"
+    >
+      <Alert.Indicator />
+      <Alert.Title>{children}</Alert.Title>
+    </Alert.Root>
+  );
 }

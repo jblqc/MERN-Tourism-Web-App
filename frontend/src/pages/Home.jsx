@@ -1,3 +1,4 @@
+// src/pages/Home.jsx
 import {
   Box,
   Container,
@@ -16,26 +17,38 @@ import {
   GridItem,
   Image,
   Icon,
-  useColorModeValue,
-} from '@chakra-ui/react';
-import { useEffect } from 'react';
-import { FiSearch, FiStar } from 'react-icons/fi';
-import { useTourStore } from '../store/useTourStore';
-import TourCard from '../components/TourCard';
-import GlassBox from '../components/GlassBox';
-export default function Home() {
-  const { tours, loading, fetchTours } = useTourStore();
+} from "@chakra-ui/react";
+import { useEffect } from "react";
+import { FiSearch, FiStar } from "react-icons/fi";
+import { useTour } from "../hooks/useTours";
+import TourCard from "../components/TourCard";
+import GlassBox from "../components/GlassBox";
+import { useNavigate } from "react-router-dom";
+import { useTourStore } from "../store/useTourStore";
 
-  const glassBg = useColorModeValue(
-    'rgba(255, 255, 255, 0.11)',
-    'rgba(26,32,44,0.5)',
-  );
+export default function Home() {
+  const {
+    tours,
+    featuredTours,
+    miniGridTours,
+    heroImage,
+    stats,
+    loading,
+    fetchTours,
+  } = useTour();
+
   const blurStyle = {
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+  };
+  const navigate = useNavigate();
+  const setCurrentTour = useTourStore((state) => state.setCurrentTour);
+
+  const handleClick = (tour) => {
+    setCurrentTour(tour);
+    navigate(`/tour/${tour.slug}`);
   };
 
-  // Fetch once when page loads
   useEffect(() => {
     fetchTours();
   }, [fetchTours]);
@@ -53,21 +66,6 @@ export default function Home() {
         <Text>No tours available.</Text>
       </Container>
     );
-
-  // random hero background
-  const hero = `tour-${Math.floor(Math.random() * tours.length)}-1.jpg`;
-
-  const stats = [
-    { label: 'Guided Tours Annually', value: '500+' },
-    { label: 'Satisfaction Rate', value: '90.5%' },
-    { label: 'Destinations', value: '150+' },
-  ];
-
-  // shuffle tours to randomize featured & miniGrid
-  const shuffled = [...tours].sort(() => 0.5 - Math.random());
-  const featured = shuffled.slice(0, 3);
-  const miniGrid = shuffled.slice(3, 7);
-
   return (
     <Box>
       {/* HERO SECTION */}
@@ -88,7 +86,7 @@ export default function Home() {
           textAlign="center"
           zIndex="1"
         >
-          <Heading fontSize={['3xl', '5xl']} fontWeight="extrabold">
+          <Heading fontSize={["3xl", "5xl"]} fontWeight="extrabold">
             Make Travel Easy,
             <br /> Enjoy More Fun
           </Heading>
@@ -100,25 +98,35 @@ export default function Home() {
           <GlassBox>
             <Tabs variant="soft-rounded" colorScheme="purple" mb={4}>
               <TabList justifyContent="center">
-                <Tab>Destinations</Tab>
-                <Tab>Tours</Tab>
-                <Tab>Packages</Tab>
+                <Tab color="white">Destinations</Tab>
+                <Tab color="white">Tours</Tab>
+                <Tab color="white">Packages</Tab>
               </TabList>
             </Tabs>
 
             <SimpleGrid columns={[1, 5]} spacing={3}>
-              <Input placeholder="Find a Destination" />
-              <Select placeholder="Select Price Range">
+              <Input
+                placeholder="Find a Destination"
+                color="white"
+                borderColor={"whiteAlpha.500"}
+              />
+              <Select
+                placeholder="Select Price Range"
+                borderColor={"whiteAlpha.500"}
+              >
                 <option>$0-$500</option>
                 <option>$500-$1000</option>
                 <option>$1000+</option>
               </Select>
-              <Select placeholder="All Cities">
+              <Select placeholder="All Cities" borderColor={"whiteAlpha.500"}>
                 <option>Paris</option>
                 <option>Tokyo</option>
                 <option>New York</option>
               </Select>
-              <Select placeholder="Select Date Range">
+              <Select
+                placeholder="Select Date Range"
+                borderColor={"whiteAlpha.500"}
+              >
                 <option>Jan 2025</option>
                 <option>Feb 2025</option>
               </Select>
@@ -149,7 +157,7 @@ export default function Home() {
         </SimpleGrid>
 
         <SimpleGrid columns={[1, 3]} spacing={6}>
-          {featured.map((tour) => (
+          {featuredTours.map((tour) => (
             <TourCard key={tour._id} tour={tour} />
           ))}
         </SimpleGrid>
@@ -164,7 +172,7 @@ export default function Home() {
           at your thoughtfully selected destinations.
         </Text>
 
-        <Grid templateColumns={['1fr', '2fr 3fr']} gap={6}>
+        <Grid templateColumns={["1fr", "2fr 3fr"]} gap={6}>
           <GridItem
             bgImage={`url(/img/lbg-1.jpg)`}
             bgSize="cover"
@@ -206,8 +214,8 @@ export default function Home() {
                     w="60px"
                     h="40px"
                     objectFit="cover"
-                    borderRightRadius={n === 5 ? 'full' : '5'}
-                    borderLeftRadius={n === 1 ? 'full' : '5'}
+                    borderRightRadius={n === 5 ? "full" : "5"}
+                    borderLeftRadius={n === 1 ? "full" : "5"}
                   />
                 ))}
               </HStack>
@@ -217,13 +225,14 @@ export default function Home() {
           {/* Right Grid */}
           <GridItem>
             <SimpleGrid columns={[1, 2]} spacing={10} h="100%">
-              {miniGrid.map((tour) => (
+              {miniGridTours.map((tour) => (
                 <Box
                   key={tour._id}
                   bg="white"
+                  onClick={() => handleClick(tour)} // ★ FIX
                   _hover={{
-                    transform: 'translateY(-3px)',
-                    transition: '0.3s',
+                    transform: "translateY(-3px)",
+                    transition: "0.3s",
                   }}
                 >
                   <Box position="relative">
@@ -250,7 +259,7 @@ export default function Home() {
                     >
                       <Icon as={FiStar} color="yellow.400" boxSize={4} />
                       <Text fontWeight="bold" fontSize="sm">
-                        {tour.ratingsAverage?.toFixed(1) || '4.9'}
+                        {tour.ratingsAverage?.toFixed(1) || "4.9"}
                       </Text>
                     </Box>
                   </Box>
@@ -277,7 +286,8 @@ export default function Home() {
 
       {/* CTA FOOTER */}
       <Box
-        bgImage={`url(/img/tours/${hero})`}
+        // bgImage={`url(${heroImage})`}
+        bgImage={`url(./public/img/lbg-4.jpg)`}
         bgSize="cover"
         bgPos="center"
         py={40}
@@ -287,10 +297,10 @@ export default function Home() {
       >
         <Box position="absolute" inset="0" bg="rgba(0, 0, 0, 0.55)" />
         <VStack position="relative" spacing={6}>
-          <Heading fontSize={['3xl', '5xl']}>
+          <Heading fontSize={["3xl", "5xl"]}>
             Begin your exciting adventure into nature today.
           </Heading>
-          <Button size="lg" colorScheme="purple">
+          <Button size="lg" colorScheme="purple" borderRadius={"full"}>
             Sign Up
           </Button>
         </VStack>

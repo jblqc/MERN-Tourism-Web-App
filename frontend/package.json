@@ -14,6 +14,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@redux-devtools/extension": "^3.3.0",
+    "axios": "^1.13.2",
     "framer-motion": "^11.2.6",
     "mapbox-gl": "^3.16.0",
     "react": "^18.3.1",

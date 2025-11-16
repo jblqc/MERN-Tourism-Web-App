@@ -1,11 +1,11 @@
-import { Box, Flex, Text, HStack, Icon, Link } from '@chakra-ui/react';
-import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
-
+import { Box, Flex, Text, HStack, Icon, Link } from "@chakra-ui/react";
+import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
+import GlassBox from "./GlassBox";
 export default function Footer() {
   return (
-    <Box bg="gray.100" py={8} borderTop="1px solid" borderColor="gray.200">
+    <GlassBox w="100%" py={8}>
       <Flex
-        direction={['column', 'row']}
+        direction={["column", "row"]}
         justify="space-between"
         align="center"
         maxW="6xl"
@@ -24,8 +24,8 @@ export default function Footer() {
               as={FaFacebook}
               w={5}
               h={5}
-              color="teal.600"
-              _hover={{ color: 'teal.800' }}
+              color="purple.500"
+              _hover={{ color: "purple.600" }}
             />
           </Link>
           <Link href="#" isExternal>
@@ -33,8 +33,8 @@ export default function Footer() {
               as={FaInstagram}
               w={5}
               h={5}
-              color="teal.600"
-              _hover={{ color: 'teal.800' }}
+              color="purple.500"
+              _hover={{ color: "purple.600" }}
             />
           </Link>
           <Link href="#" isExternal>
@@ -42,12 +42,12 @@ export default function Footer() {
               as={FaTwitter}
               w={5}
               h={5}
-              color="teal.600"
-              _hover={{ color: 'teal.800' }}
+              color="purple.500"
+              _hover={{ color: "purple.600" }}
             />
           </Link>
         </HStack>
       </Flex>
-    </Box>
+    </GlassBox>
   );
 }

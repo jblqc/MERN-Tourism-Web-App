@@ -31,7 +31,6 @@ export default function Header() {
     <Box
       px={8}
       py={4}
-      position="fixed"
       top="0"
       left="0"
       w="100%"
@@ -85,7 +84,7 @@ export default function Header() {
                     size="sm"
                     name={user?.name}
                     src={`${import.meta.env.VITE_BACKEND_URL}/img/users/${
-                      user.photo
+                      user?.photo
                     }`}
                     border="2px solid white"
                   />

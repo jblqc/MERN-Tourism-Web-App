@@ -33,7 +33,7 @@ export const useTourStore = create(
           set({ loading: true });
           try {
             const res = await getAllTours();
-            set({ tours: res.data.doc }); // ✅ FIX
+            set({ tours: res }); // res IS the doc array
           } catch (err) {
             set({ error: err.message });
           } finally {
@@ -48,7 +48,7 @@ export const useTourStore = create(
           set({ loading: true });
           try {
             const res = await getTourById(id);
-            set({ currentTour: res.data.doc }); // ✅ FIX
+            set({ currentTour: res }); // ✅ FIX
             return res.data.doc;
           } catch (err) {
             set({ error: err.message });
@@ -64,7 +64,7 @@ export const useTourStore = create(
           set({ loading: true });
           try {
             const res = await getTop5Cheap();
-            set({ topTours: res.data.doc }); // ✅ FIX
+            set({ topTours: res }); // ✅ FIX
           } catch (err) {
             set({ error: err.message });
           } finally {
@@ -78,7 +78,7 @@ export const useTourStore = create(
         fetchStats: async () => {
           try {
             const res = await getTourStats();
-            set({ stats: res.data.stats }); // ✅ FIX
+            set({ stats: res }); // ✅ FIX
           } catch (err) {
             set({ error: err.message });
           }
@@ -90,7 +90,7 @@ export const useTourStore = create(
         fetchMonthlyPlan: async (year) => {
           try {
             const res = await getMonthlyPlan(year);
-            set({ monthlyPlan: res.data.plan }); // ✅ FIX
+            set({ monthlyPlan: res }); // ✅ FIX
           } catch (err) {
             set({ error: err.message });
           }
@@ -102,7 +102,7 @@ export const useTourStore = create(
         fetchDistances: async (lat, lng, unit) => {
           try {
             const res = await getDistances(lat, lng, unit);
-            set({ distances: res.data }); // backend returns {data: distances}
+            set({ distances: res }); // backend returns {data: distances}
           } catch (err) {
             set({ error: err.message });
           }
@@ -113,7 +113,7 @@ export const useTourStore = create(
          * --------------------------------- */
         createTour: async (body) => {
           const res = await createTour(body);
-          set({ tours: [...get().tours, res.data.tour] }); // ✅ FIX
+          set({ tours: [...get().tours, res] }); // ✅ FIX
         },
 
         updateTour: async (id, body) => {

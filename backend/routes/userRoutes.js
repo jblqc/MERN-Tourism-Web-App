@@ -1,31 +1,37 @@
-const express = require('express');
-const userController = require('../controllers/userController');
-const authController = require('../controllers/authenticationController');
+const express = require("express");
+const userController = require("../controllers/userController");
+const authController = require("../controllers/authenticationController");
 
 const router = express.Router();
-router.post('/signup', authController.signup);
-router.post('/login', authController.login);
-router.get('/logout', authController.logout);
+router.post("/signup", authController.signup);
+router.post("/login", authController.login);
+// NEW EMAIL CODE LOGIN
+router.post("/send-email-code", authController.sendEmailCode);
+router.post("/verify-email-code", authController.verifyEmailCode);
+router.post("/send-otp", authController.sendOtp);
+router.post("/verify-otp", authController.verifyOtp);
 
-router.post('/forgotPassword', authController.forgotPassword);
-router.patch('/resetPassword/:token', authController.resetPassword);
+router.get("/logout", authController.logout);
+
+router.post("/forgotPassword", authController.forgotPassword);
+router.patch("/resetPassword/:token", authController.resetPassword);
 
 router.use(authController.protect);
-router.patch('/updateMyPassword', authController.updatePassword);
-router.get('/me', userController.getMe, userController.getUser);
+router.patch("/updateMyPassword", authController.updatePassword);
+router.get("/me", userController.getMe, userController.getUser);
 router.patch(
-  '/updateMe',
+  "/updateMe",
   userController.uploadUserPhoto,
   userController.resizeUserPhoto,
   userController.updateMe
 );
-router.delete('/deleteMe', userController.deleteMe);
+router.delete("/deleteMe", userController.deleteMe);
 
-router.route('/').get(userController.getAllUsers);
+router.route("/").get(userController.getAllUsers);
 router
-  .route('/:id')
+  .route("/:id")
   .get(userController.getUser)
-  .delete(authController.restrictTo('admin'), userController.deleteUser)
-  .patch(authController.restrictTo('admin'), userController.updateUser);
+  .delete(authController.restrictTo("admin"), userController.deleteUser)
+  .patch(authController.restrictTo("admin"), userController.updateUser);
 
 module.exports = router;

@@ -45,7 +45,6 @@ export const useReviewStore = create(
           set({ loading: true });
           try {
             const reviewsArr = await getReviewsByTour(tourId);
-            // getReviewsByTour() returns array
             set({
               reviews: reviewsArr || [],
               loading: false,

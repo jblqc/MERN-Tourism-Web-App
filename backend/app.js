@@ -20,66 +20,97 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
 
 const app = express();
-// app.enable('trust proxy');
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+// Disable only the things that break Google Login
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    frameguard: false,
+  })
+);
+
+// REQUIRED for popup login
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  next();
+});
 // View engine
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
 
 // Static files
 app.use(express.static(path.join(__dirname, "public")));
-
-// 🔒 Security Middlewares
-app.use(helmet()); // base protection
-app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'",
-        "'unsafe-eval'", // 🧩 allow Parcel’s eval() scripts
-        "'unsafe-inline'", // 🧩 allow inline bootstrap for HMR
-        "https://js.stripe.com",
-        "https://api.mapbox.com",
-        "https://cdnjs.cloudflare.com",
-        "blob:",
-      ],
-      scriptSrcElem: [
-        "'self'",
-        "'unsafe-inline'",
-        "'unsafe-eval'",
-        "https://js.stripe.com",
-        "https://api.mapbox.com",
-        "https://cdnjs.cloudflare.com",
-        "blob:",
-      ],
-      styleSrc: [
-        "'self'",
-        "https://api.mapbox.com",
-        "https://fonts.googleapis.com",
-        "'unsafe-inline'",
-      ],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: [
-        "'self'",
-        "data:",
-        "https://api.mapbox.com",
-        "https://events.mapbox.com",
-      ],
-      connectSrc: [
-        "'self'",
-        "https://api.mapbox.com",
-        "https://events.mapbox.com",
-        "https://js.stripe.com",
-        "https://r.stripe.com",
-        "http://localhost:*",
-        "ws://localhost:*",
-        "ws://127.0.0.1:*",
-      ],
-      frameSrc: ["'self'", "https://js.stripe.com"],
-      workerSrc: ["'self'", "blob:"],
-    },
-  })
-);
+// app.use(
+//   helmet.contentSecurityPolicy({
+//     directives: {
+//       defaultSrc: ["'self'"],
+//       scriptSrc: [
+//         "'self'",
+//         "'unsafe-eval'", // 🧩 allow Parcel’s eval() scripts
+//         "'unsafe-inline'", // 🧩 allow inline bootstrap for HMR
+//         "https://js.stripe.com",
+//         "https://accounts.google.com", // ⭐ REQUIRED
+//         "https://www.gstatic.com",
+//         "https://api.mapbox.com",
+//         "https://cdnjs.cloudflare.com",
+//         "blob:",
+//       ],
+//       scriptSrcElem: [
+//         "'self'",
+//         "'unsafe-inline'",
+//         "'unsafe-eval'",
+//         "https://js.stripe.com",
+//         "https://api.mapbox.com",
+//         "https://accounts.google.com/*",
+//         "https://www.gstatic.com",
+//         "https://cdnjs.cloudflare.com",
+//         "blob:",
+//       ],
+//       styleSrc: [
+//         "'self'",
+//         "https://api.mapbox.com",
+//         "https://fonts.googleapis.com",
+//         "'unsafe-inline'",
+//       ],
+//       fontSrc: ["'self'", "https://fonts.gstatic.com"],
+//       imgSrc: [
+//         "'self'",
+//         "data:",
+//         "https://api.mapbox.com",
+//         "https://events.mapbox.com",
+//         "https://lh3.googleusercontent.com",
+//       ],
+//       connectSrc: [
+//         "'self'",
+//         "https://api.mapbox.com",
+//         "https://events.mapbox.com",
+//         "https://js.stripe.com",
+//         "https://r.stripe.com",
+//         "http://localhost:*",
+//         "ws://localhost:*",
+//         "ws://127.0.0.1:*",
+//       ],
+//       frameSrc: [
+//         "'self'",
+//         "https://js.stripe.com",
+//         "https://accounts.google.com/*",
+//       ],
+//       workerSrc: ["'self'", "blob:"],
+//       referrerPolicy: {
+//         policy: "strict-origin-when-cross-origin",
+//       },
+//     },
+//   })
+// );
 
 // Logging
 if (process.env.NODE_ENV === "development") {
@@ -119,16 +150,6 @@ app.use(
   })
 );
 app.use(compression());
-const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
-
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
-
-app.options("*", cors());
 
 // Custom middleware
 app.use((req, res, next) => {
@@ -140,6 +161,7 @@ app.use((req, res, next) => {
 
 // Routers
 app.use("/", viewRouter);
+
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/reviews", reviewRouter);

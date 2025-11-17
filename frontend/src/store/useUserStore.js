@@ -12,6 +12,13 @@ import {
   getMe,
   getUsers,
 } from "../api/userApi";
+import {
+  googleLogin as googleLoginApi,
+  sendEmailCode,
+  verifyEmailCode,
+  sendSmsOtp as apiSendSms,
+  verifySmsOtp as apiVerifySms,
+} from "../api/authApi";
 
 export const useUserStore = create(
   devtools(
@@ -82,7 +89,41 @@ export const useUserStore = create(
             throw err;
           }
         },
+        // -------------------------------------
+        // GOOGLE LOGIN
+        // -------------------------------------
+        googleLogin: async (credential) => {
+          try {
+            const res = await googleLoginApi(credential);
+            set({ user: res.data.user, token: res.token });
+            return res;
+          } catch (err) {
+            set({
+              error: err.response?.data?.message || "Google login failed",
+            });
+            throw err;
+          }
+        },
+        // EMAIL CODE: SEND
+        sendEmailCode: async (email) => {
+          return await sendEmailCode(email);
+        },
 
+        // EMAIL CODE: VERIFY LOGIN
+        verifyEmailCode: async (email, code) => {
+          const data = await verifyEmailCode(email, code);
+          set({ user: data.data.user, token: data.token });
+          return data;
+        },
+        // OTP SMS
+        sendSmsOtp: async (phone) => {
+          return await apiSendSms(phone);
+        },
+        verifySmsOtp: async (phone, code) => {
+          const res = await apiVerifySms(phone, code);
+          set({ user: res.data.data.user, token: res.data.token });
+          return res;
+        },
         // -------------------------------------
         // LOGOUT
         // -------------------------------------

@@ -1,8 +1,8 @@
 // src/api/axiosClient.js
-import axios from 'axios';
+import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: '/api/v1',
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 

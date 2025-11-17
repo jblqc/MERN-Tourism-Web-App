@@ -15,7 +15,13 @@ import {
   IconButton,
   Divider,
   useColorModeValue,
-  useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
 } from "@chakra-ui/react";
 
 import {
@@ -25,30 +31,182 @@ import {
   FiArrowRight,
   FiHeart,
 } from "react-icons/fi";
-import { FcGoogle } from "react-icons/fc";
 import { Md123, MdSms } from "react-icons/md";
-
-import { useState } from "react";
-import { useAuth } from "../hooks/useAuth"; // ✅ Use FINAL hook
+import { GoogleLogin } from "@react-oauth/google";
+import { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 import { useToastMessage } from "../utils/toast";
-import { useNavigate } from "react-router-dom"; // ✅ Correct redirect
-
+import { useNavigate } from "react-router-dom";
+import VerificationModal from "../components/VerificationModal";
 export default function AuthPage() {
-  const toast = useToast();
   const navigate = useNavigate();
+  const {
+    login,
+    signup,
+    loading,
+    googleLogin,
+    initGoogleLoginButton,
+    sendEmailCode,
+    verifyEmailCode,
+    sendSmsOtp,
+    verifySmsOtp,
+  } = useAuth();
 
-  const { login, signup, loading } = useAuth();
   const { showSuccess, showError } = useToastMessage();
 
   const [isLogin, setIsLogin] = useState(true);
   const [showPass, setShowPass] = useState(false);
   const [bgIndex, setBgIndex] = useState(1);
 
-  // Form state
+  // Unified modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("email"); // 'email' | 'sms'
+  const [modalValue, setModalValue] = useState("");
+  const [modalCode, setModalCode] = useState("");
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalCodeSent, setModalCodeSent] = useState(false);
+
+  // Login & Signup fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  /* ----------------------------------------------
+     GOOGLE LOGIN BUTTON INIT
+  ------------------------------------------------*/
+  useEffect(() => {
+    if (!isLogin) return;
+
+    initGoogleLoginButton(async (res) => {
+      await googleLogin(res.credential);
+      navigate("/");
+    });
+  }, [isLogin]);
+
+  /* ----------------------------------------------
+     LOGIN (email + password)
+  ------------------------------------------------*/
+  const handleLogin = async () => {
+    try {
+      const res = await login(email, password);
+      showSuccess(
+        "Login Successful!",
+        `Welcome back, ${res?.data?.user?.name || "Traveler"}`
+      );
+      setTimeout(() => navigate("/"), 1200);
+    } catch (err) {
+      showError(
+        "Login Failed",
+        err.response?.data?.message || "Invalid credentials"
+      );
+    }
+  };
+
+  /* ----------------------------------------------
+     OTP MODAL HELPERS
+  ------------------------------------------------*/
+  const openEmailModal = () => {
+    setModalMode("email");
+    setModalValue("");
+    setModalCode("");
+    setModalCodeSent(false);
+    setModalOpen(true);
+  };
+
+  const openSmsModal = () => {
+    setModalMode("sms");
+    setModalValue("");
+    setModalCode("");
+    setModalCodeSent(false);
+    setModalOpen(true);
+  };
+
+  const handleSend = async () => {
+    if (!modalValue) {
+      showError(
+        modalMode === "email" ? "Missing Email" : "Missing Phone Number",
+        `Please enter your ${modalMode === "email" ? "email" : "phone number"}.`
+      );
+      return;
+    }
+
+    setModalLoading(true);
+
+    try {
+      if (modalMode === "email") {
+        await sendEmailCode(modalValue);
+      } else {
+        await sendSmsOtp(modalValue);
+      }
+
+      setModalCodeSent(true);
+      showSuccess("Code Sent!", "Please check your inbox or phone.");
+    } catch (err) {
+      showError(
+        "Failed",
+        err?.response?.data?.message || "Unable to send verification code."
+      );
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!modalCode) {
+      showError("Missing Code", "Enter the 6-digit code.");
+      return;
+    }
+
+    setModalLoading(true);
+
+    try {
+      let res;
+
+      if (modalMode === "email") {
+        res = await verifyEmailCode(modalValue, modalCode);
+      } else {
+        res = await verifySmsOtp(modalValue, modalCode);
+      }
+
+      showSuccess(
+        "Login Successful",
+        `Welcome back ${res?.data?.user?.name || "Traveler"}`
+      );
+
+      setModalOpen(false);
+      navigate("/");
+    } catch (err) {
+      showError(
+        "Invalid Code",
+        err?.response?.data?.message ||
+          "Incorrect or expired verification code."
+      );
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  /* ----------------------------------------------
+     SIGNUP
+  ------------------------------------------------*/
+  const handleSignup = async () => {
+    try {
+      const body = { name, email, password, passwordConfirm: password };
+      await signup(body);
+
+      showSuccess("Account created!", "Welcome to Voyanix 🌍");
+      setTimeout(() => navigate("/"), 1200);
+    } catch (err) {
+      showError(
+        "Signup Failed",
+        err.response?.data?.message || "Please try again."
+      );
+    }
+  };
+
+  /* ----------------------------------------------
+     BACKGROUND SLIDER
+  ------------------------------------------------*/
   const toggleBg = (dir) => {
     setBgIndex((prev) => {
       const next = dir === "next" ? prev + 1 : prev - 1;
@@ -58,81 +216,38 @@ export default function AuthPage() {
     });
   };
 
-  // -------------------------------------------------
-  // LOGIN
-  // -------------------------------------------------
-  const handleLogin = async () => {
-    try {
-      const res = await login(email, password);
-
-      const userName = res?.data?.user?.name || "Traveler";
-
-      showSuccess("Login Successful!", `Welcome back, ${userName}`);
-
-      setTimeout(() => navigate("/"), 1500);
-    } catch (err) {
-      showError(
-        "Login Failed",
-        err?.response?.data?.message || "Invalid email or password."
-      );
-    }
-  };
-  // -------------------------------------------------
-  // SIGNUP
-  // -------------------------------------------------
-  const handleSignup = async () => {
-    try {
-      const body = { name, email, password, passwordConfirm: password };
-
-      const res = await signup(body); // ← matches FINAL store
-
-      toast({
-        position: "top",
-        duration: 2500,
-        isClosable: true,
-        render: () => (
-          <GlassAlert status="success" title="Welcome!">
-            Account created successfully 🎉
-          </GlassAlert>
-        ),
-      });
-
-      setTimeout(() => navigate("/"), 1800);
-    } catch (err) {
-      toast({
-        position: "top",
-        duration: 3500,
-        isClosable: true,
-        render: () => (
-          <GlassAlert status="error" title="Signup Failed">
-            {err?.response?.data?.message || "Please try again."}
-          </GlassAlert>
-        ),
-      });
-    }
-  };
-
   return (
     <Flex
-      h="100vh"
       align="center"
       justify="center"
       p={8}
       bgImage="url('/img/login_bg.png')"
-      // bgSize="cover"
-      // bg="linear-gradient( 359.5deg,  rgba(115,122,205,1) 8.8%, rgba(186,191,248,1) 77.4% );"
       bgPosition="center"
       bgRepeat="no-repeat"
       position="relative"
     >
+      <VerificationModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        mode={modalMode}
+        value={modalValue}
+        setValue={setModalValue}
+        code={modalCode}
+        setCode={setModalCode}
+        loading={modalLoading}
+        isCodeSent={modalCodeSent}
+        onSend={handleSend}
+        onVerify={handleVerify}
+      />
+
       <Grid
         templateColumns={["1fr", null, "1fr 1fr"]}
-        h="70vh"
-        w={["95%", "90%", "80%", "60%"]}
+        h="100vh"
+        w={["95%", "90%", "80%", "70%"]}
         bg="white"
         borderRadius="3xl"
         overflow="hidden"
-        mt="5%"
+        my="4%"
         boxShadow="2xl"
       >
         {/* LEFT PANEL */}
@@ -169,6 +284,7 @@ export default function AuthPage() {
               >
                 Login
               </Button>
+
               <Button
                 flex="1"
                 borderRadius="full"
@@ -181,26 +297,33 @@ export default function AuthPage() {
               </Button>
             </HStack>
 
-            {/* ------------------------------------------------- */}
             {/* LOGIN FORM */}
-            {/* ------------------------------------------------- */}
             {isLogin ? (
-              <VStack align="stretch" spacing={5}>
+              <VStack align="stretch">
                 <Heading size="md" textAlign="center">
                   Journey Begins
                 </Heading>
+                <Box w="100%">
+                  <div id="google-btn"></div>
+                </Box>
 
-                <HStack spacing={3} justify="center">
-                  <Button leftIcon={<FcGoogle size={22} />} variant="outline">
-                    Gmail
-                  </Button>
-                  <Button leftIcon={<Md123 size={22} />} variant="outline">
-                    Email Code
-                  </Button>
-                  <Button leftIcon={<MdSms size={22} />} variant="outline">
-                    SMS Code
-                  </Button>
-                </HStack>
+                <Button
+                  colorScheme="gray"
+                  variant="outline"
+                  leftIcon={<Md123 />}
+                  onClick={openEmailModal}
+                >
+                  Send code to Email
+                </Button>
+
+                <Button
+                  colorScheme="gray"
+                  variant="outline"
+                  leftIcon={<MdSms />}
+                  onClick={openSmsModal}
+                >
+                  Send code to SMS
+                </Button>
 
                 <HStack my={2}>
                   <Divider />
@@ -246,9 +369,7 @@ export default function AuthPage() {
                 </Button>
               </VStack>
             ) : (
-              /* ------------------------------------------------- */
               /* SIGNUP FORM */
-              /* ------------------------------------------------- */
               <VStack align="stretch" spacing={5}>
                 <Heading size="md" textAlign="center">
                   Create Your Account

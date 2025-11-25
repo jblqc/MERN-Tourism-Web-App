@@ -9,7 +9,7 @@ export const useAuth = () => {
     signup,
     logout,
     updateProfile,
-    updatePassword,
+    updateMyPassword,
     forgotPassword,
     resetPassword,
     deleteAccount,
@@ -61,7 +61,7 @@ export const useAuth = () => {
     googleLogin,
 
     updateProfile,
-    updatePassword,
+    updateMyPassword,
     forgotPassword,
     resetPassword,
     deleteAccount,

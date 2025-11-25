@@ -28,7 +28,10 @@ export const updatePassword = async (body) => {
   const res = await axiosClient.patch(`/users/updatePassword`, body);
   return res.data;
 };
-
+export const updateMyPassword = async (body) => {
+  const res = await axiosClient.patch(`/users/updateMyPassword`, body);
+  return res.data;
+};
 // UPDATE profile (form-data allowed)
 export const updateMe = async (data) => {
   const res = await axiosClient.patch("/users/updateMe", data);

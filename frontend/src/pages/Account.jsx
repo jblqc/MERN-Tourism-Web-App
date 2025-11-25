@@ -37,7 +37,7 @@ export default function Account() {
   const {
     user,
     updateProfile,
-    updatePassword,
+    updateMyPassword,
     sendPhoneVerificationOtp,
     verifyPhoneVerificationOtp,
     checkPhoneUnique,
@@ -89,7 +89,7 @@ export default function Account() {
 
     try {
       await checkPhoneUnique(formatPhone(phone));
-    } catch (err) {
+    } catch {
       showError("Phone number already in use");
       setPhone(user.phoneNumber || "");
     }
@@ -125,7 +125,7 @@ export default function Account() {
     const payload = Object.fromEntries(data);
 
     try {
-      await updatePassword(payload);
+      await updateMyPassword(payload);
       showSuccess("Password changed");
       e.target.reset();
     } catch {
@@ -161,7 +161,7 @@ export default function Account() {
       showSuccess("Phone verified!");
       setPhoneVerified(true);
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       showError("Incorrect or expired OTP");
     } finally {
       setModalLoading(false);
@@ -280,23 +280,22 @@ export default function Account() {
                     </FormControl>
 
                     {/* PHOTO */}
+
                     <FormControl>
                       <FormLabel>Profile Photo</FormLabel>
-
-                      <Flex
-                        align="center"
-                        as="label"
-                        htmlFor="photoUpload"
-                        cursor="pointer"
-                        gap={4}
-                        p={3}
-                        bg="whiteAlpha.700"
-                        borderRadius="md"
-                      >
-                        <Button colorScheme="purple" size="sm">
+                      <Flex gap={5} bg="purple.50" borderRadius="12px" p={2}>
+                        <Button
+                          as="label"
+                          htmlFor="photoUpload"
+                          colorScheme="purple"
+                          size="sm"
+                          cursor="pointer"
+                        >
                           Upload Photo
                         </Button>
-                        <Text id="uploadFilename">No file chosen</Text>
+                        <Text mt={2} id="uploadFilename">
+                          No file chosen
+                        </Text>
                       </Flex>
 
                       <Input
@@ -313,7 +312,6 @@ export default function Account() {
                         }}
                       />
                     </FormControl>
-
                     <Button colorScheme="purple" w="160px" type="submit">
                       Save Changes
                     </Button>

@@ -6,7 +6,7 @@ import {
   logout as apiLogout,
   forgotPassword,
   resetPassword,
-  updatePassword,
+  updateMyPassword,
   updateMe,
   deleteMe,
   getMe,
@@ -22,6 +22,7 @@ import {
   verifyPhoneVerificationOtp,
   checkPhoneUnique,
 } from "../api/authApi";
+import { redirect } from "react-router-dom";
 
 export const useUserStore = create(
   devtools(
@@ -77,12 +78,19 @@ export const useUserStore = create(
           set({ loading: true, error: null });
           try {
             const res = await apiLogin(email, password);
+
+            // Save token first
+            set({ token: res.token });
+
+            // Immediately fetch full user data
+            const me = await getMe();
+
             set({
-              user: res.user,
-              token: res.token,
+              user: me,
               loading: false,
             });
-            return res;
+
+            return { user: me, token: res.token };
           } catch (err) {
             set({
               loading: false,
@@ -92,6 +100,7 @@ export const useUserStore = create(
             throw err;
           }
         },
+
         // -------------------------------------
         // GOOGLE LOGIN
         // -------------------------------------
@@ -186,8 +195,13 @@ export const useUserStore = create(
         updateProfile: async (formData) => {
           try {
             const res = await updateMe(formData);
-            set({ user: { ...get().user, ...res.data.user } });
-            return res.data.user;
+
+            // Fetch full fresh user after update
+            const me = await getMe();
+
+            set({ user: me });
+
+            return me;
           } catch (err) {
             throw err.response?.data?.message || "Failed updating profile";
           }
@@ -196,13 +210,18 @@ export const useUserStore = create(
         // -------------------------------------
         // UPDATE PASSWORD
         // -------------------------------------
-        updatePassword: async (body) => {
+        updateMyPassword: async (body) => {
           try {
-            const res = await updatePassword(body);
-            set({
-              user: res.user,
-              token: res.token,
-            });
+            const res = await updateMyPassword(body);
+
+            // Save new token from backend
+            set({ token: res.token });
+
+            // Always re-fetch full user
+            const me = await getMe();
+
+            set({ user: me });
+
             return res;
           } catch (err) {
             throw err.response?.data?.message || "Password update failed";

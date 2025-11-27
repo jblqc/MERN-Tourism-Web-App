@@ -21,21 +21,33 @@ import {
 import { useEffect } from "react";
 import { FiSearch, FiStar } from "react-icons/fi";
 import { useTour } from "../hooks/useTours";
+import { useFilter } from "../hooks/useFilter";
 import TourCard from "../components/TourCard";
 import GlassBox from "../components/GlassBox";
 import { useNavigate } from "react-router-dom";
 import { useTourStore } from "../store/useTourStore";
 
 export default function Home() {
+const {
+    filters,
+    filteredTours,
+    setFilter,
+    applyFilters,
+    loading: loadingFilter,
+  } = useFilter();
+
   const {
     tours,
     featuredTours,
     miniGridTours,
     heroImage,
+    fetchCountries,
+    countries,
     stats,
     loading,
     fetchTours,
   } = useTour();
+
 
   const blurStyle = {
     backdropFilter: "blur(20px)",
@@ -43,6 +55,7 @@ export default function Home() {
   };
   const navigate = useNavigate();
   const setCurrentTour = useTourStore((state) => state.setCurrentTour);
+  const results = filteredTours.length > 0 ? filteredTours : tours;
 
   const handleClick = (tour) => {
     setCurrentTour(tour);
@@ -51,7 +64,8 @@ export default function Home() {
 
   useEffect(() => {
     fetchTours();
-  }, [fetchTours]);
+    fetchCountries();  
+  }, []);
 
   if (loading)
     return (
@@ -105,34 +119,93 @@ export default function Home() {
             </Tabs>
 
             <SimpleGrid columns={[1, 5]} spacing={3}>
-              <Input
-                placeholder="Find a Destination"
-                color="white"
-                borderColor={"whiteAlpha.500"}
-              />
-              <Select
-                placeholder="Select Price Range"
-                borderColor={"whiteAlpha.500"}
-              >
-                <option>$0-$500</option>
-                <option>$500-$1000</option>
-                <option>$1000+</option>
-              </Select>
-              <Select placeholder="All Cities" borderColor={"whiteAlpha.500"}>
-                <option>Paris</option>
-                <option>Tokyo</option>
-                <option>New York</option>
-              </Select>
-              <Select
-                placeholder="Select Date Range"
-                borderColor={"whiteAlpha.500"}
-              >
-                <option>Jan 2025</option>
-                <option>Feb 2025</option>
-              </Select>
-              <Button colorScheme="purple" rightIcon={<FiSearch />}>
-                Discover
-              </Button>
+            <Input
+              placeholder="Find a Destination"
+              color="white"
+              borderColor={"whiteAlpha.500"}
+              value={filters.search}
+              onChange={(e) => setFilter("search", e.target.value)}
+            />
+
+            <Select
+              placeholder="Select Price Range"
+              borderColor={"whiteAlpha.500"}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (!value) {
+                  setFilter("priceMin", "");
+                  setFilter("priceMax", "");
+                  return;
+                }
+
+                if (value === "$0-$500") {
+                  setFilter("priceMin", 0);
+                  setFilter("priceMax", 500);
+                } else if (value === "$500-$1000") {
+                  setFilter("priceMin", 500);
+                  setFilter("priceMax", 1000);
+                } else if (value === "$1000+") {
+                  setFilter("priceMin", 1000);
+                  setFilter("priceMax", "");
+                }
+              }}
+            >
+              <option>$0-$500</option>
+              <option>$500-$1000</option>
+              <option>$1000+</option>
+            </Select>
+
+            <Select
+              placeholder="All Countries"
+              color="white"
+              borderColor={"whiteAlpha.500"}
+              value={filters.country}
+              onChange={(e) => setFilter("country", e.target.value)}
+            >
+              {countries.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              placeholder="Select Date Range"
+              borderColor={"whiteAlpha.500"}
+              onChange={(e) => {
+                const val = e.target.value;
+
+                if (!val) {
+                  setFilter("dateFrom", "");
+                  setFilter("dateTo", "");
+                  return;
+                }
+
+                if (val === "Jan 2025") {
+                  setFilter("dateFrom", "2025-01-01");
+                  setFilter("dateTo", "2025-01-31");
+                }
+                else if (val === "Feb 2025") {
+                  setFilter("dateFrom", "2025-02-01");
+                  setFilter("dateTo", "2025-02-29");
+                }
+              }}
+            >
+              <option>Jan 2025</option>
+              <option>Feb 2025</option>
+            </Select>
+            <Button
+              colorScheme="purple"
+              rightIcon={<FiSearch />}
+              onClick={async () => {
+                await applyFilters();
+                navigate("/tours");
+              }}
+            >
+              Discover
+            </Button>
+
             </SimpleGrid>
           </GlassBox>
         </VStack>

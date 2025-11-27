@@ -1,8 +1,8 @@
 import axiosClient from "./axiosClient";
 
 // GET all tours
-export const getAllTours = async () => {
-  const res = await axiosClient.get("/tours");
+export const getAllTours = async (query = "") => {
+  const res = await axiosClient.get(`/tours?${query}`);
   return res.data.data.doc;
 };
 
@@ -74,4 +74,9 @@ export const createReviewForTour = async (tourId, data) => {
 export const getTourReviews = async (tourId) => {
   const res = await axiosClient.get(`/tours/${tourId}/reviews`);
   return res.data.data.reviews;
+};
+
+export const getCountries = async () => {
+  const res = await axiosClient.get("/tours/countries");
+  return res.data.data.countries;
 };

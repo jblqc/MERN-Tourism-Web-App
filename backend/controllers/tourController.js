@@ -205,3 +205,14 @@ exports.getDistances = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ status: "SUCCESS", data: distances });
 });
+exports.getAllCountries = catchAsync(async (req, res, next) => {
+  const countries = await Tour.distinct("country");
+
+  res.status(200).json({
+    status: "success",
+    results: countries.length,
+    data: {
+      countries,
+    },
+  });
+});

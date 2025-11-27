@@ -10,14 +10,19 @@ import {
   Link as ChakraLink,
   Text,
 } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
 
 export default function Header() {
   const { user, isLoggedIn, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    await logout();       // Clear store + backend cookie
+    navigate("/");        // Redirect home
+  };
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50); // change threshold here
@@ -73,7 +78,7 @@ export default function Header() {
           {isLoggedIn ? (
             <>
               {/* LOGOUT BUTTON */}
-              <Button variant="ghost" size="sm" onClick={logout}>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
                 Log out
               </Button>
 

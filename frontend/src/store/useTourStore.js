@@ -9,7 +9,7 @@ import {
   getDistances,
   updateTour,
   deleteTour,
-  createTour,
+  createTour,getCountries
 } from "../api/tourApi";
 
 export const useTourStore = create(
@@ -20,6 +20,7 @@ export const useTourStore = create(
         currentTour: null,
         stats: [],
         topTours: [],
+        countries:[],
         monthlyPlan: [],
         distances: [],
         loading: false,
@@ -103,6 +104,14 @@ export const useTourStore = create(
           try {
             const res = await getDistances(lat, lng, unit);
             set({ distances: res }); // backend returns {data: distances}
+          } catch (err) {
+            set({ error: err.message });
+          }
+        },
+        fetchCountries: async () => {
+          try {
+            const res = await getCountries();
+            set({ countries: res });
           } catch (err) {
             set({ error: err.message });
           }

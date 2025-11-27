@@ -6,12 +6,14 @@ export const useTour = () => {
   const {
     tours,
     currentTour,
+    countries,
     loading: loadingTour,
     error,
     fetchTours,
     fetchTour: fetchTourBySlug,
     fetchTourById,
     setCurrentTour,
+    fetchCountries,
   } = useTourStore();
 
   /* ------------------------------
@@ -43,13 +45,14 @@ export const useTour = () => {
     safeTours.length === 0
       ? "/img/default-hero.jpg"
       : safeTours[Math.floor(Math.random() * safeTours.length)].imageCover;
-
+ 
   return {
     tours: safeTours,
     featuredTours,
     miniGridTours,
     heroImage,
     stats,
+countries,
 
     // SINGLE TOUR
     tour: currentTour,
@@ -59,6 +62,7 @@ export const useTour = () => {
     fetchTours,
     fetchTourBySlug,
     fetchTourById,
+    fetchCountries,
 
     // STATES
     loading: loadingTour,

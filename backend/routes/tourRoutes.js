@@ -12,6 +12,8 @@ router.use("/:tourId/reviews", reviewRouter);
 router
   .route("/top-5-cheap")
   .get(tourController.aliasTopTour, tourController.getAllTours);
+router.get("/countries", tourController.getAllCountries);
+
 router
   .route("/tours-within/:distance/center/:latlong/unit/:unit")
   .get(tourController.getToursWithin);

@@ -10,14 +10,16 @@ import TourDetail from "./pages/TourDetail";
 import Login from "./pages/Login";
 import Account from "./pages/Account";
 import ErrorPage from "./pages/ErrorPage";
+import FullPageLoader from "./components/FullPageLoader";
 
 function App() {
-  const init = useUserStore((s) => s.init);
+  const { ready, init } = useUserStore();
 
-  // 🔥 triggers user/init in Redux DevTools
   useEffect(() => {
     init();
   }, []);
+
+  if (!ready) return <FullPageLoader />;
 
   return (
     <Routes>

@@ -2,7 +2,8 @@ import axiosClient from "./axiosClient";
 
 // GET all tours
 export const getAllTours = async (query = "") => {
-  const res = await axiosClient.get(`/tours?${query}`);
+  const url = query ? `/tours?${query}` : "/tours";
+  const res = await axiosClient.get(url);
   return res.data.data.doc;
 };
 

@@ -259,8 +259,8 @@ export default function AuthPage() {
         >
           <VStack spacing={8} align="stretch" w="full" maxW="sm">
             <Box textAlign="center">
-              <Heading fontFamily="Playfair Display" mb={2}>
-                Travel Voyanix
+              <Heading fontSize={40} fontFamily="Playfair Display" mb={2}>
+                Travel. Explore.Experience
               </Heading>
               <Text color="gray.500" fontSize="sm">
                 Explore More. Experience Life.

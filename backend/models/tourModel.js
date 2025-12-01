@@ -13,7 +13,7 @@ const tourSchema = new mongoose.Schema(
     },
     country: {
       type: String,
-      required: [true, "A tour must have a country"]
+      required: [true, "A tour must have a country"],
     },
     slug: { type: String, unique: true },
     duration: {
@@ -185,21 +185,26 @@ tourSchema.post(/^find/, function (docs, next) {
 tourSchema.methods.toClient = function () {
   const obj = this.toObject({ virtuals: true });
 
-  const prependIfLocal = (img) => {
-    if (!img) return null;
+  const defaultImage = "/img/tours/default.jpg";
 
-    // If already full URL (http/https), return as is
-    if (img.startsWith("http://") || img.startsWith("https://")) return img;
+  // Normalize image value
+  const normalize = (img) => {
+    if (!img) return defaultImage;
 
-    // Otherwise treat as local image
+    // External URLs not allowed → fallback to default
+    if (img.startsWith("http://") || img.startsWith("https://")) {
+      return defaultImage;
+    }
+
+    // Local filename → build path
     return `/img/tours/${img}`;
   };
 
   // Normalize cover
-  obj.imageCover = prependIfLocal(obj.imageCover);
+  obj.imageCover = normalize(obj.imageCover);
 
-  // Normalize all gallery images
-  obj.images = (obj.images || []).map(prependIfLocal);
+  // Normalize gallery images
+  obj.images = (obj.images || []).map(normalize);
 
   return obj;
 };

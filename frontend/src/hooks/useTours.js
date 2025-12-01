@@ -45,14 +45,14 @@ export const useTour = () => {
     safeTours.length === 0
       ? "/img/default-hero.jpg"
       : safeTours[Math.floor(Math.random() * safeTours.length)].imageCover;
- 
+
   return {
     tours: safeTours,
     featuredTours,
     miniGridTours,
     heroImage,
     stats,
-countries,
+    countries,
 
     // SINGLE TOUR
     tour: currentTour,

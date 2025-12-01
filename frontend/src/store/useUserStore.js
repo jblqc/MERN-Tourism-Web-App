@@ -1,17 +1,19 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+
 import {
   signup,
   login as apiLogin,
   logout as apiLogout,
   forgotPassword,
   resetPassword,
-  updateMyPassword,
-  updateMe,
+  updateMyPassword as apiUpdatePassword,
+  updateMe as apiUpdateMe,
   deleteMe,
   getMe,
   getUsers,
 } from "../api/userApi";
+
 import {
   googleLogin as googleLoginApi,
   sendEmailCode,
@@ -22,7 +24,6 @@ import {
   verifyPhoneVerificationOtp,
   checkPhoneUnique,
 } from "../api/authApi";
-import { redirect } from "react-router-dom";
 
 export const useUserStore = create(
   devtools(
@@ -30,37 +31,53 @@ export const useUserStore = create(
       (set, get) => ({
         user: null,
         token: null,
-        users: [], // admin list
+        users: [],
+
         loading: false,
         error: null,
 
-        // -------------------------------------
-        // INIT (loads persisted user)
-        // -------------------------------------
+        ready: false, // prevents UI flash on reload
+
+        /* ------------------------------------------------
+         * INIT — runs automatically on app load
+         * ------------------------------------------------ */
         init: async () => {
-          const persistedToken = get().token;
-          if (!persistedToken) return;
+          const { ready } = get();
+
+          // prevent double-calls
+          if (ready) return;
+
+          const token = get().token;
+
+          if (!token) {
+            set({ ready: true });
+            return;
+          }
 
           try {
             const me = await getMe();
             set({ user: me });
           } catch {
             set({ user: null, token: null });
+          } finally {
+            set({ ready: true });
           }
         },
 
-        // -------------------------------------
-        // SIGNUP
-        // -------------------------------------
+        /* ------------------------------------------------
+         * SIGNUP
+         * ------------------------------------------------ */
         signup: async (data) => {
           set({ loading: true, error: null });
           try {
             const res = await signup(data);
+
             set({
               user: res.user,
               token: res.token,
               loading: false,
             });
+
             return res;
           } catch (err) {
             set({
@@ -71,18 +88,19 @@ export const useUserStore = create(
           }
         },
 
-        // -------------------------------------
-        // LOGIN
-        // -------------------------------------
+        /* ------------------------------------------------
+         * LOGIN
+         * ------------------------------------------------ */
         login: async (email, password) => {
           set({ loading: true, error: null });
+
           try {
             const res = await apiLogin(email, password);
 
-            // Save token first
+            // Save the token
             set({ token: res.token });
 
-            // Immediately fetch full user data
+            // Fetch logged-in user's profile
             const me = await getMe();
 
             set({
@@ -101,13 +119,21 @@ export const useUserStore = create(
           }
         },
 
-        // -------------------------------------
-        // GOOGLE LOGIN
-        // -------------------------------------
+        /* ------------------------------------------------
+         * GOOGLE LOGIN
+         * ------------------------------------------------ */
         googleLogin: async (credential) => {
           try {
             const res = await googleLoginApi(credential);
-            set({ user: res.data.user, token: res.token });
+
+            // Save token
+            set({ token: res.token });
+
+            // Fetch complete profile (always safer)
+            const me = await getMe();
+
+            set({ user: me });
+
             return res;
           } catch (err) {
             set({
@@ -116,44 +142,53 @@ export const useUserStore = create(
             throw err;
           }
         },
-        // EMAIL CODE: SEND
+
+        /* ------------------------------------------------
+         * EMAIL CODE LOGIN
+         * ------------------------------------------------ */
         sendEmailCode: async (email) => {
           return await sendEmailCode(email);
         },
 
-        // EMAIL CODE: VERIFY LOGIN
         verifyEmailCode: async (email, code) => {
           const data = await verifyEmailCode(email, code);
-          set({ user: data.data.user, token: data.token });
-          return data;
+
+          set({ token: data.token });
+
+          const me = await getMe();
+          set({ user: me });
+
+          return me;
         },
-        // OTP SMS
+
+        /* ------------------------------------------------
+         * SMS OTP LOGIN
+         * ------------------------------------------------ */
         sendSmsOtp: async (phone) => {
           return await apiSendSms(phone);
         },
+
         verifySmsOtp: async (phone, code) => {
           const res = await apiVerifySms(phone, code);
-          set({ user: res.data.data.user, token: res.data.token });
-          return res;
-        },
-        // PHONE VERIFICATION (ACCOUNT SETTINGS)
-        sendPhoneVerificationOtp: async (phone) => {
-          return await sendPhoneVerificationOtp(phone);
+
+          set({ token: res.data.token });
+
+          const me = await getMe();
+          set({ user: me });
+
+          return me;
         },
 
-        verifyPhoneVerificationOtp: async (code) => {
-          return await verifyPhoneVerificationOtp(code);
-        },
-        checkPhoneUnique: async (phone) => {
-          try {
-            return await checkPhoneUnique(phone);
-          } catch (err) {
-            throw err.response?.data?.message || "Phone number invalid";
-          }
-        },
-        // -------------------------------------
-        // LOGOUT
-        // -------------------------------------
+        /* ------------------------------------------------
+         * PHONE VERIFICATION (account settings)
+         * ------------------------------------------------ */
+        sendPhoneVerificationOtp,
+        verifyPhoneVerificationOtp,
+        checkPhoneUnique,
+
+        /* ------------------------------------------------
+         * LOGOUT
+         * ------------------------------------------------ */
         logout: async () => {
           try {
             await apiLogout();
@@ -162,9 +197,9 @@ export const useUserStore = create(
           }
         },
 
-        // -------------------------------------
-        // FORGOT PASSWORD
-        // -------------------------------------
+        /* ------------------------------------------------
+         * FORGOT PASSWORD
+         * ------------------------------------------------ */
         forgotPassword: async (email) => {
           try {
             return await forgotPassword(email);
@@ -173,32 +208,33 @@ export const useUserStore = create(
           }
         },
 
-        // -------------------------------------
-        // RESET PASSWORD
-        // -------------------------------------
-        resetPassword: async (token, data) => {
+        /* ------------------------------------------------
+         * RESET PASSWORD
+         * ------------------------------------------------ */
+        resetPassword: async (token, body) => {
           try {
-            const res = await resetPassword(token, data);
+            const res = await resetPassword(token, body);
+
             set({
               user: res.user,
               token: res.token,
             });
+
             return res;
           } catch (err) {
             throw err.response?.data?.message || "Reset password failed";
           }
         },
 
-        // -------------------------------------
-        // UPDATE PROFILE (name, email, photo)
-        // -------------------------------------
+        /* ------------------------------------------------
+         * UPDATE PROFILE
+         * ------------------------------------------------ */
         updateProfile: async (formData) => {
           try {
-            const res = await updateMe(formData);
+            await apiUpdateMe(formData);
 
-            // Fetch full fresh user after update
+            // re-fetch full user
             const me = await getMe();
-
             set({ user: me });
 
             return me;
@@ -207,19 +243,18 @@ export const useUserStore = create(
           }
         },
 
-        // -------------------------------------
-        // UPDATE PASSWORD
-        // -------------------------------------
+        /* ------------------------------------------------
+         * UPDATE PASSWORD
+         * ------------------------------------------------ */
         updateMyPassword: async (body) => {
           try {
-            const res = await updateMyPassword(body);
+            const res = await apiUpdatePassword(body);
 
             // Save new token from backend
             set({ token: res.token });
 
-            // Always re-fetch full user
+            // Fetch fresh user
             const me = await getMe();
-
             set({ user: me });
 
             return res;
@@ -228,9 +263,9 @@ export const useUserStore = create(
           }
         },
 
-        // -------------------------------------
-        // DELETE USER (self)
-        // -------------------------------------
+        /* ------------------------------------------------
+         * DELETE ACCOUNT
+         * ------------------------------------------------ */
         deleteAccount: async () => {
           try {
             await deleteMe();
@@ -240,9 +275,9 @@ export const useUserStore = create(
           }
         },
 
-        // -------------------------------------
-        // ADMIN: GET USER LIST
-        // -------------------------------------
+        /* ------------------------------------------------
+         * ADMIN - GET USER LIST
+         * ------------------------------------------------ */
         fetchUsers: async (role = "user") => {
           try {
             const users = await getUsers(role);

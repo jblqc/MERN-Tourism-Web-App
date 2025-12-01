@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { FiMapPin, FiCalendar, FiFlag, FiUsers, FiStar } from "react-icons/fi";
 import { useTourStore } from "../store/useTourStore"; // ✅ FIX
+import defaultImg from "../assets/default.jpg";
 
 export default function TourCard({ tour }) {
   const navigate = useNavigate();
@@ -44,6 +45,8 @@ export default function TourCard({ tour }) {
           src={tour.imageCover}
           alt={tour.name}
           w="100%"
+            fallbackSrc={defaultImg}
+
           h="100%"
           objectFit="cover"
           transition="0.4s"

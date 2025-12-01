@@ -9,7 +9,8 @@ import {
   getDistances,
   updateTour,
   deleteTour,
-  createTour,getCountries
+  createTour,
+  getCountries,
 } from "../api/tourApi";
 
 export const useTourStore = create(
@@ -20,12 +21,12 @@ export const useTourStore = create(
         currentTour: null,
         stats: [],
         topTours: [],
-        countries:[],
+        countries: [],
         monthlyPlan: [],
         distances: [],
         loading: false,
         error: null,
-        setCurrentTour: (tour) => set({ currentTour: tour }), // <-- ⭐ FIX ADDED
+        setCurrentTour: (tour) => set({ currentTour: tour }),
 
         /* ---------------------------------
          * FETCH ALL TOURS
@@ -111,9 +112,9 @@ export const useTourStore = create(
         fetchCountries: async () => {
           try {
             const res = await getCountries();
-            set({ countries: res });
-          } catch (err) {
-            set({ error: err.message });
+            set({ countries: Array.isArray(res) ? res : [] });
+          } catch {
+            set({ countries: [] });
           }
         },
 

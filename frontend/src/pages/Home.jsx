@@ -17,37 +17,42 @@ import {
   GridItem,
   Image,
   Icon,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { FiSearch, FiStar } from "react-icons/fi";
 import { useTour } from "../hooks/useTours";
 import { useFilter } from "../hooks/useFilter";
+import { useState } from "react";
 import TourCard from "../components/TourCard";
 import GlassBox from "../components/GlassBox";
 import { useNavigate } from "react-router-dom";
 import { useTourStore } from "../store/useTourStore";
+import { DateRange } from "react-date-range";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+import defaultImg from "../assets/default.jpg";
 
 export default function Home() {
-const {
-    filters,
-    filteredTours,
-    setFilter,
-    applyFilters,
-    loading: loadingFilter,
-  } = useFilter();
+  const { filters, setFilter, applyFilters, clearAllFilters } = useFilter();
 
   const {
     tours,
     featuredTours,
     miniGridTours,
-    heroImage,
-    fetchCountries,
     countries,
+    fetchCountries,
+    fetchTours,
     stats,
     loading,
-    fetchTours,
   } = useTour();
-
+  const loaded = useRef(false);
 
   const blurStyle = {
     backdropFilter: "blur(20px)",
@@ -55,18 +60,26 @@ const {
   };
   const navigate = useNavigate();
   const setCurrentTour = useTourStore((state) => state.setCurrentTour);
-  const results = filteredTours.length > 0 ? filteredTours : tours;
-
+  const [openCalendar, setOpenCalendar] = useState(false);
+  const [range, setRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
   const handleClick = (tour) => {
     setCurrentTour(tour);
     navigate(`/tour/${tour.slug}`);
   };
-
   useEffect(() => {
-    fetchTours();
-    fetchCountries();  
-  }, []);
+    if (loaded.current) return;
+    loaded.current = true;
 
+    fetchTours();
+    fetchCountries();
+    clearAllFilters(); // Clear only when landing on Home
+  }, []);
   if (loading)
     return (
       <Container textAlign="center" py={10}>
@@ -83,6 +96,42 @@ const {
   return (
     <Box>
       {/* HERO SECTION */}
+      <Modal isOpen={openCalendar} onClose={() => setOpenCalendar(false)}>
+        <ModalOverlay />
+        <ModalContent bg="white" borderRadius="lg">
+          <ModalHeader>Select Date Range</ModalHeader>
+          <ModalCloseButton />
+
+          <ModalBody>
+            <DateRange
+              editableDateInputs={true}
+              onChange={(item) => setRange([item.selection])}
+              moveRangeOnFirstSelection={false}
+              ranges={range}
+            />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              colorScheme="purple"
+              onClick={() => {
+                setFilter(
+                  "dateFrom",
+                  range[0].startDate.toISOString().split("T")[0]
+                );
+                setFilter(
+                  "dateTo",
+                  range[0].startDate.toISOString().split("T")[0]
+                );
+                setOpenCalendar(false);
+              }}
+            >
+              Apply
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       <Box
         w="100%"
         h="100vh"
@@ -113,99 +162,86 @@ const {
             <Tabs variant="soft-rounded" colorScheme="purple" mb={4}>
               <TabList justifyContent="center">
                 <Tab color="white">Destinations</Tab>
-                <Tab color="white">Tours</Tab>
-                <Tab color="white">Packages</Tab>
+<Tab color="white" onClick={() => navigate("/tours")}>
+  Tours
+</Tab>                <Tab color="white">Packages</Tab>
               </TabList>
             </Tabs>
 
             <SimpleGrid columns={[1, 5]} spacing={3}>
-            <Input
-              placeholder="Find a Destination"
-              color="white"
-              borderColor={"whiteAlpha.500"}
-              value={filters.search}
-              onChange={(e) => setFilter("search", e.target.value)}
-            />
+              <Input
+                placeholder="Find a Destination"
+                color="white"
+                _placeholder={{ color: "white" }} // placeholder color
+                borderColor={"whiteAlpha.500"}
+                value={filters.search}
+                onChange={(e) => setFilter("search", e.target.value)}
+              />
 
-            <Select
-              placeholder="Select Price Range"
-              borderColor={"whiteAlpha.500"}
-              onChange={(e) => {
-                const value = e.target.value;
+              <Select
+                placeholder="Select Price Range"
+                borderColor={"whiteAlpha.500"}
+                onChange={(e) => {
+                  const value = e.target.value;
 
-                if (!value) {
-                  setFilter("priceMin", "");
-                  setFilter("priceMax", "");
-                  return;
-                }
+                  if (!value) {
+                    setFilter("priceMin", "");
+                    setFilter("priceMax", "");
+                    return;
+                  }
 
-                if (value === "$0-$500") {
-                  setFilter("priceMin", 0);
-                  setFilter("priceMax", 500);
-                } else if (value === "$500-$1000") {
-                  setFilter("priceMin", 500);
-                  setFilter("priceMax", 1000);
-                } else if (value === "$1000+") {
-                  setFilter("priceMin", 1000);
-                  setFilter("priceMax", "");
-                }
-              }}
-            >
-              <option>$0-$500</option>
-              <option>$500-$1000</option>
-              <option>$1000+</option>
-            </Select>
+                  if (value === "$0-$500") {
+                    setFilter("priceMin", 0);
+                    setFilter("priceMax", 500);
+                  } else if (value === "$500-$1000") {
+                    setFilter("priceMin", 500);
+                    setFilter("priceMax", 1000);
+                  } else if (value === "$1000+") {
+                    setFilter("priceMin", 1000);
+                    setFilter("priceMax", "");
+                  }
+                }}
+              >
+                <option>$0-$500</option>
+                <option>$500-$1000</option>
+                <option>$1000+</option>
+              </Select>
 
-            <Select
-              placeholder="All Countries"
-              color="white"
-              borderColor={"whiteAlpha.500"}
-              value={filters.country}
-              onChange={(e) => setFilter("country", e.target.value)}
-            >
-              {countries.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Select>
+              <Select
+                placeholder="All Countries"
+                color="white"
+                borderColor={"whiteAlpha.500"}
+                value={filters.country}
+                onChange={(e) => setFilter("country", e.target.value)}
+              >
+                {countries.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </Select>
 
-            <Select
-              placeholder="Select Date Range"
-              borderColor={"whiteAlpha.500"}
-              onChange={(e) => {
-                const val = e.target.value;
+              <Button
+                variant="outline"
+                borderColor="whiteAlpha.500"
+                color="white"
+                onClick={() => setOpenCalendar(true)}
+              >
+                {filters.dateFrom && filters.dateTo
+                  ? `${filters.dateFrom} → ${filters.dateTo}`
+                  : "Select Date Range"}
+              </Button>
 
-                if (!val) {
-                  setFilter("dateFrom", "");
-                  setFilter("dateTo", "");
-                  return;
-                }
-
-                if (val === "Jan 2025") {
-                  setFilter("dateFrom", "2025-01-01");
-                  setFilter("dateTo", "2025-01-31");
-                }
-                else if (val === "Feb 2025") {
-                  setFilter("dateFrom", "2025-02-01");
-                  setFilter("dateTo", "2025-02-29");
-                }
-              }}
-            >
-              <option>Jan 2025</option>
-              <option>Feb 2025</option>
-            </Select>
-            <Button
-              colorScheme="purple"
-              rightIcon={<FiSearch />}
-              onClick={async () => {
-                await applyFilters();
-                navigate("/tours");
-              }}
-            >
-              Discover
-            </Button>
-
+              <Button
+                colorScheme="purple"
+                rightIcon={<FiSearch />}
+                onClick={async () => {
+                  await applyFilters();
+                  navigate("/tours");
+                }}
+              >
+                Discover
+              </Button>
             </SimpleGrid>
           </GlassBox>
         </VStack>
@@ -312,6 +348,8 @@ const {
                     <Image
                       src={tour.imageCover}
                       alt={tour.name}
+                      fallbackSrc={defaultImg}
+                    
                       w="100%"
                       h="100%"
                       objectFit="cover"

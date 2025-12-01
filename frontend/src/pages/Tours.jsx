@@ -7,90 +7,65 @@ import {
   Input,
   Select,
   Button,
-  VStack,
-  HStack,
 } from "@chakra-ui/react";
-import { FiSearch } from "react-icons/fi";
 import { useEffect } from "react";
-import TourCard from "../components/TourCard";
+import { FiSearch } from "react-icons/fi";
 import { useTour } from "../hooks/useTours";
 import { useFilter } from "../hooks/useFilter";
-import { useNavigate } from "react-router-dom";
-
+import TourCard from "../components/TourCard";
+import PageTransition from "../components/PageTransition";
 export default function Tours() {
-  const navigate = useNavigate();
-
-  // FILTERS
   const {
     filters,
     filteredTours,
     loading: loadingFilter,
     setFilter,
     applyFilters,
+    clearAllFilters,
   } = useFilter();
-
-  // TOURS
-  const { tours, fetchTours, countries, fetchCountries, loading: loadingTours } =
-    useTour();
-
-  // First load only all tours + countries
   useEffect(() => {
-    fetchTours();
-    fetchCountries();
+    clearAllFilters();
   }, []);
 
-  // Use filtered results if available, otherwise all tours
-  const results = filteredTours.length > 0 ? filteredTours : tours;
+  const { tours, countries, loading: loadingTours } = useTour();
 
+  const usingFilters = Object.values(filters).some((v) => v !== "");
+  const results = usingFilters ? filteredTours : tours;
   const loading = loadingTours || loadingFilter;
 
   return (
-    <Box py={10}>
-      {/* PAGE TITLE */}
-      <Container maxW="7xl" mb={8}>
-        <Heading fontWeight="bold" mb={2}>
-          {results.length} Tours Found
-        </Heading>
-        <Text color="gray.600">
-          Explore our curated adventures and discover your next journey.
-        </Text>
-      </Container>
+    <PageTransition>
+      <Box py={28}>
+        <Container maxW="7xl" mb={8}>
+          <Heading>{results.length} Tours Found</Heading>
+          <Text color="gray.500">Refine your search</Text>
+        </Container>
 
-      {/* FILTER BAR */}
-      <Container maxW="7xl" mb={10}>
-        <Box
-          bg="white"
-          p={6}
-          borderRadius="xl"
-          boxShadow="md"
-          border="1px solid"
-          borderColor="gray.200"
-        >
+        {/* FILTER BAR */}
+        <Container maxW="7xl" mb={10}>
           <SimpleGrid columns={[1, 5]} spacing={4}>
-            {/* SEARCH */}
             <Input
               placeholder="Find a Destination"
               value={filters.search}
               onChange={(e) => setFilter("search", e.target.value)}
             />
 
-            {/* PRICE */}
             <Select
               placeholder="Price Range"
               onChange={(e) => {
-                const value = e.target.value;
-                if (!value) {
+                const v = e.target.value;
+                if (!v) {
                   setFilter("priceMin", "");
                   setFilter("priceMax", "");
                   return;
                 }
-                if (value === "$0-$500") {
+                if (v === "$0-$500") {
                   setFilter("priceMin", 0);
                   setFilter("priceMax", 500);
-                } else if (value === "$500-$1000") {
+                } else if (v === "$500-$1000") {
                   setFilter("priceMin", 500);
                   setFilter("priceMax", 1000);
-                } else if (value === "$1000+") {
+                } else if (v === "$1000+") {
                   setFilter("priceMin", 1000);
                   setFilter("priceMax", "");
                 }
@@ -101,70 +76,40 @@ export default function Tours() {
               <option>$1000+</option>
             </Select>
 
-            {/* COUNTRY */}
             <Select
-              placeholder="All Countries"
+              placeholder="Country"
               value={filters.country}
               onChange={(e) => setFilter("country", e.target.value)}
             >
               {countries.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+                <option key={c}>{c}</option>
               ))}
             </Select>
 
-            {/* DATE */}
-            <Select
-              placeholder="Date Range"
-              onChange={(e) => {
-                const val = e.target.value;
-
-                if (!val) {
-                  setFilter("dateFrom", "");
-                  setFilter("dateTo", "");
-                  return;
-                }
-
-                if (val === "Jan 2025") {
-                  setFilter("dateFrom", "2025-01-01");
-                  setFilter("dateTo", "2025-01-31");
-                } else if (val === "Feb 2025") {
-                  setFilter("dateFrom", "2025-02-01");
-                  setFilter("dateTo", "2025-02-29");
-                }
-              }}
-            >
-              <option>Jan 2025</option>
-              <option>Feb 2025</option>
-            </Select>
-
-            {/* APPLY FILTER BUTTON */}
             <Button
               colorScheme="purple"
               rightIcon={<FiSearch />}
               onClick={applyFilters}
             >
-              Discover
+              Apply
             </Button>
           </SimpleGrid>
-        </Box>
-      </Container>
+        </Container>
 
-      {/* RESULTS GRID */}
-      <Container maxW="7xl">
-        {loading ? (
-          <Text>Loading tours...</Text>
-        ) : results.length === 0 ? (
-          <Text>No tours match your filters.</Text>
-        ) : (
-          <SimpleGrid columns={[1, 2, 3]} spacing={8}>
-            {results.map((tour) => (
-              <TourCard key={tour._id} tour={tour} />
-            ))}
-          </SimpleGrid>
-        )}
-      </Container>
-    </Box>
+        <Container maxW="7xl">
+          {loading ? (
+            <Text>Loading...</Text>
+          ) : results.length === 0 ? (
+            <Text>No tours match your filters.</Text>
+          ) : (
+            <SimpleGrid columns={[1, 2, 3]} spacing={8}>
+              {results.map((t) => (
+                <TourCard key={t._id} tour={t} />
+              ))}
+            </SimpleGrid>
+          )}
+        </Container>
+      </Box>
+    </PageTransition>
   );
 }

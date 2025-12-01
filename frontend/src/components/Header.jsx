@@ -33,18 +33,20 @@ export default function Header() {
   }, []);
 
   return (
-    <Box
-      px={8}
-      py={4}
-      top="0"
-      left="0"
-      w="100%"
-      zIndex="1000"
-      transition="0.3s ease"
-      bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
-      backdropFilter={scrolled ? "blur(10px)" : "none"}
-      boxShadow={scrolled ? "md" : "none"}
-    >
+  <Box
+  position="fixed"
+  px={8}
+  py={4}
+  top="0"
+  left="0"
+  w="100%"
+  zIndex="1000"
+  transition="0.3s ease"
+  bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
+  backdropFilter={scrolled ? "blur(10px)" : "none"}
+  boxShadow={scrolled ? "md" : "none"}
+>
+
       <Flex align="center">
         {/* LEFT NAV */}
         <HStack spacing={6}>

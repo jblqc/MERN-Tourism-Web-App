@@ -19,9 +19,9 @@ import {
   Badge,
   Icon,
 } from "@chakra-ui/react";
-
+import defaultImg from "../assets/default.jpg";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState , useRef} from "react";
 import { getBookings } from "../api/bookingApi";
 import { useTour } from "../hooks/useTours";
 import { useReviewStore } from "../store/useReviewStore";
@@ -41,6 +41,9 @@ import { useReviews } from "../hooks/useReviews";
 
 export default function TourDetail() {
   const { slug } = useParams();
+useEffect(() => {
+window.scrollTo(0, 0);
+}, []);
 
   const {
     tour,
@@ -52,13 +55,40 @@ export default function TourDetail() {
 
   const { reviews, fetchReviewsByTour, loading: reviewLoading } = useReviews();
   const [selectedDate, setSelectedDate] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const mapRef = useRef(null);
 
   const bg = useColorModeValue("gray.50", "gray.900");
   const cardBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.700", "gray.200");
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  // src/pages/TourDetail.jsx
+useEffect(() => {
+
+  const interval = setInterval(() => {
+
+    if (mapRef.current) {
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setShowMap(true);
+            observer.disconnect();
+            clearInterval(interval);
+          }
+        },
+        { rootMargin: "400px 0px", threshold: 0.01 }
+      );
+
+      observer.observe(mapRef.current);
+    }
+  }, 160); 
+
+  return () => clearInterval(interval);
+}, []);
+
+
+
   useEffect(() => {
     if (!slug) return;
 
@@ -135,7 +165,9 @@ export default function TourDetail() {
       <Box position="relative" h={["300px", "400px", "500px"]}>
         <Image
           src={tour.imageCover}
-          alt={tour.name}
+          alt={tour.name}  
+  fallbackSrc={defaultImg}
+
           w="100%"
           h="100%"
           objectFit="cover"
@@ -262,7 +294,9 @@ export default function TourDetail() {
                 <Image
                   key={img}
                   src={img}
-                  alt={`${tour.name}-${i}`}
+                  alt={`${tour.name}-${i}`}    
+  fallbackSrc={defaultImg}
+
                   w="100%"
                   h="210px"
                   objectFit="cover"
@@ -273,12 +307,38 @@ export default function TourDetail() {
             </SimpleGrid>
 
             {/* MAP */}
-            <Box bg={cardBg} boxShadow="sm" borderRadius="lg" p={8} mb={8}>
-              <Heading fontSize="xl" mb={4}>
-                Tour Location
-              </Heading>
-              <MapBox locations={tour.locations} />
-            </Box>
+<Box bg={cardBg} boxShadow="sm" borderRadius="lg" p={8} mb={8} >
+  <Heading fontSize="xl" mb={4}>Tour Location</Heading>
+
+  <Box
+    ref={mapRef}
+    maxH="500px"
+    w="100%"
+  >
+    {showMap ? (
+      <>
+        {console.log("🗺 Rendering <MapBox> now...")}
+        <MapBox locations={tour.locations} />
+      </>
+    ) : (
+      <>
+        {console.log("⌛ Map NOT rendered yet — waiting for intersection...")}
+        <Box
+          h="100%"
+          w="100%"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          color="gray.400"
+        >
+          Loading map…
+        </Box>
+      </>
+    )}
+  </Box>
+</Box>
+
+
 
             {/* REVIEWS */}
             <Box bg={cardBg} boxShadow="sm" borderRadius="lg" p={8}>

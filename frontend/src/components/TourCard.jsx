@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { FiMapPin, FiCalendar, FiFlag, FiUsers, FiStar } from "react-icons/fi";
 import { useTourStore } from "../store/useTourStore"; // ✅ FIX
 import defaultImg from "../assets/default.jpg";
+import { FcGlobe } from "react-icons/fc";
 
 export default function TourCard({ tour }) {
   const navigate = useNavigate();
@@ -33,7 +34,6 @@ export default function TourCard({ tour }) {
       transition="all 0.3s"
       _hover={{ transform: "scale(1.02)", boxShadow: "xl" }}
     >
-      {/* IMAGE */}
       <Box
         position="relative"
         h="240px"
@@ -45,14 +45,12 @@ export default function TourCard({ tour }) {
           src={tour.imageCover}
           alt={tour.name}
           w="100%"
-            fallbackSrc={defaultImg}
-
+          fallbackSrc={defaultImg}
           h="100%"
           objectFit="cover"
           transition="0.4s"
           _hover={{ transform: "scale(1.05)" }}
         />
-        <Box position="absolute" inset="0" bg="rgba(0,0,0,0.25)" />
         <Heading
           position="absolute"
           bottom="4"
@@ -63,9 +61,28 @@ export default function TourCard({ tour }) {
           textShadow="0px 2px 4px rgba(0,0,0,0.6)"
         >
           {tour.name}
-        </Heading>
+        </Heading>{" "}
+        {tour?.country && (
+          <Box
+            position="absolute"
+            top="10px"
+            right="10px"
+            bg="white"
+            px={2.5}
+            py={1}
+            borderRadius="full"
+            display="flex"
+            alignItems="center"
+            gap={1}
+            boxShadow="sm"
+          >
+            <Icon as={FcGlobe} boxSize={4} />
+            <Text fontWeight="bold" fontSize="sm">
+              {tour.country}
+            </Text>
+          </Box>
+        )}
       </Box>
-
       {/* DETAILS */}
       <Box p={5}>
         <Text fontSize="sm" color="gray.500" mb={2}>
@@ -103,7 +120,6 @@ export default function TourCard({ tour }) {
           </Flex>
         </Stack>
       </Box>
-
       {/* FOOTER */}
       <Flex justify="space-between" align="center" p={5} bg="purple.50">
         <Box>

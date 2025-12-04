@@ -23,9 +23,9 @@ export default function Tours() {
     applyFilters,
     clearAllFilters,
   } = useFilter();
-  useEffect(() => {
-    clearAllFilters();
-  }, []);
+  // useEffect(() => {
+  //   clearAllFilters();
+  // }, []);
 
   const { tours, countries, loading: loadingTours } = useTour();
 

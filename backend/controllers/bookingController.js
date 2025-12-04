@@ -9,14 +9,14 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   // 1) Get current tour
   const tour = await Tour.findById(req.params.tourId);
   if (!tour) return next(new AppError('No tour found with that ID', 404));
+  console.log("➡️ getCheckoutSession REQ.USER =", req.user);
 
   // 2) Create checkout session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'payment',
-    success_url: `${req.protocol}://${req.get('host')}?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`,
-
-    cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
+       success_url: `http://localhost:5173/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`,
+    cancel_url: `http://localhost:5173/tours/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
     line_items: [

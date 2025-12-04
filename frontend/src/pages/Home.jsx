@@ -24,9 +24,11 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  Flex,
 } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
 import { FiSearch, FiStar } from "react-icons/fi";
+import { MdFilterAltOff } from "react-icons/md";
 import { useTour } from "../hooks/useTours";
 import { useFilter } from "../hooks/useFilter";
 import { useState } from "react";
@@ -159,15 +161,42 @@ export default function Home() {
 
           {/* Filter Card */}
           <GlassBox>
-            <Tabs variant="soft-rounded" colorScheme="purple" mb={4}>
-              <TabList justifyContent="center">
-                <Tab color="white">Destinations</Tab>
-<Tab color="white" onClick={() => navigate("/tours")}>
-  Tours
-</Tab>                <Tab color="white">Packages</Tab>
-              </TabList>
-            </Tabs>
+            <Box>
+              <Tabs variant="soft-rounded" colorScheme="purple" mb={4}>
+                <Flex justify="space-between" align="center">
+                  {/* Tabs */}
+                  <TabList justifyContent="center" flex="1">
+                    <Tab color="white">Destinations</Tab>
+                    <Tab color="white" onClick={() => navigate("/tours")}>
+                      Tours
+                    </Tab>
+                    <Tab color="white">Packages</Tab>
+                  </TabList>
 
+                  {/* RESET FILTER ICON */}
+                  <Icon
+                    as={MdFilterAltOff}
+                    boxSize={6}
+                    cursor="pointer"
+                    color={
+                      Object.values(filters).some((v) => v !== "")
+                        ? "white"
+                        : "whiteAlpha.400"
+                    }
+                    onClick={() => {
+                      if (Object.values(filters).some((v) => v !== "")) {
+                        clearAllFilters();
+                      }
+                    }}
+                    _hover={{
+                      color: Object.values(filters).some((v) => v !== "")
+                        ? "purple.300"
+                        : "whiteAlpha.400",
+                    }}
+                  />
+                </Flex>
+              </Tabs>
+            </Box>
             <SimpleGrid columns={[1, 5]} spacing={3}>
               <Input
                 placeholder="Find a Destination"
@@ -349,7 +378,6 @@ export default function Home() {
                       src={tour.imageCover}
                       alt={tour.name}
                       fallbackSrc={defaultImg}
-                    
                       w="100%"
                       h="100%"
                       objectFit="cover"

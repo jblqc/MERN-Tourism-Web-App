@@ -13,7 +13,7 @@ export const useAuth = () => {
     forgotPassword,
     resetPassword,
     deleteAccount,
-    googleLogin,
+    googleLogin,isLoggedIn,
 
     // OTP
     sendEmailCode,
@@ -53,8 +53,7 @@ export const useAuth = () => {
   return {
     user,
     token,
-    isLoggedIn: !!token,
-
+isLoggedIn,
     login,
     signup,
     logout,

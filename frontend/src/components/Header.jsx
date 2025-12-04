@@ -20,8 +20,8 @@ export default function Header() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();       // Clear store + backend cookie
-    navigate("/");        // Redirect home
+    await logout(); // Clear store + backend cookie
+    navigate("/"); // Redirect home
   };
   useEffect(() => {
     const handleScroll = () => {
@@ -33,20 +33,19 @@ export default function Header() {
   }, []);
 
   return (
-  <Box
-  position="fixed"
-  px={8}
-  py={4}
-  top="0"
-  left="0"
-  w="100%"
-  zIndex="1000"
-  transition="0.3s ease"
-  bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
-  backdropFilter={scrolled ? "blur(10px)" : "none"}
-  boxShadow={scrolled ? "md" : "none"}
->
-
+    <Box
+      position="fixed"
+      px={8}
+      py={4}
+      top="0"
+      left="0"
+      w="100%"
+      zIndex="1000"
+      transition="0.3s ease"
+      bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
+      backdropFilter={scrolled ? "blur(10px)" : "none"}
+      boxShadow={scrolled ? "md" : "none"}
+    >
       <Flex align="center">
         {/* LEFT NAV */}
         <HStack spacing={6}>
@@ -90,9 +89,13 @@ export default function Header() {
                   <Avatar
                     size="sm"
                     name={user?.name}
-                    src={`${import.meta.env.VITE_BACKEND_URL}/img/users/${
-                      user?.photo
-                    }`}
+                    src={
+                      user?.photo?.startsWith("http")
+                        ? user.photo
+                        : `${import.meta.env.VITE_BACKEND_URL}/img/users/${
+                            user.photo
+                          }`
+                    }
                     border="2px solid white"
                   />
                   <Text fontWeight="medium">{user?.name?.split(" ")[0]}</Text>

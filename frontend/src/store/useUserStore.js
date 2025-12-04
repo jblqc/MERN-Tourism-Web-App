@@ -32,7 +32,7 @@ export const useUserStore = create(
         user: null,
         token: null,
         users: [],
-
+        isLoggedIn: false,
         loading: false,
         error: null,
 
@@ -43,22 +43,20 @@ export const useUserStore = create(
          * ------------------------------------------------ */
         init: async () => {
           const { ready } = get();
-
-          // prevent double-calls
           if (ready) return;
 
           const token = get().token;
 
           if (!token) {
-            set({ ready: true });
+            set({ ready: true, isLoggedIn: false });
             return;
           }
 
           try {
             const me = await getMe();
-            set({ user: me });
+            set({ user: me, isLoggedIn: true });
           } catch {
-            set({ user: null, token: null });
+            set({ user: null, token: null, isLoggedIn: false });
           } finally {
             set({ ready: true });
           }
@@ -75,6 +73,7 @@ export const useUserStore = create(
             set({
               user: res.user,
               token: res.token,
+              isLoggedIn: true,
               loading: false,
             });
 
@@ -91,6 +90,15 @@ export const useUserStore = create(
         /* ------------------------------------------------
          * LOGIN
          * ------------------------------------------------ */
+        isLoggedInUser: () => {
+          const token = get().token;
+          const logged = Boolean(token);
+
+          set({ isLoggedIn: logged });
+
+          return logged;
+        },
+
         login: async (email, password) => {
           set({ loading: true, error: null });
 
@@ -106,6 +114,7 @@ export const useUserStore = create(
             set({
               user: me,
               loading: false,
+              isLoggedIn: true,
             });
 
             return { user: me, token: res.token };
@@ -171,14 +180,19 @@ export const useUserStore = create(
         verifySmsOtp: async (phone, code) => {
           const res = await apiVerifySms(phone, code);
 
-          set({ token: res.data.token });
+          // Save token returned from backend
+          set({ token: res.token });
 
+          // Fetch full profile (important!)
           const me = await getMe();
-          set({ user: me });
+
+          set({
+            user: me,
+            isLoggedIn: true,
+          });
 
           return me;
         },
-
         /* ------------------------------------------------
          * PHONE VERIFICATION (account settings)
          * ------------------------------------------------ */
@@ -193,7 +207,7 @@ export const useUserStore = create(
           try {
             await apiLogout();
           } finally {
-            set({ user: null, token: null });
+            set({ user: null, token: null, isLoggedIn: false });
           }
         },
 

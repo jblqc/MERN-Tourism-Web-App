@@ -25,7 +25,7 @@ export const useFilterStore = create(
           [key]: value,
         },
       }),
-
+  
     clearFilter: (key) =>
       set({
         filters: {

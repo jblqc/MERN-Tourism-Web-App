@@ -20,11 +20,11 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import defaultImg from "../assets/default.jpg";
-import { useParams } from "react-router-dom";
+import { useParams , useNavigate} from "react-router-dom";
 import { useEffect, useState , useRef} from "react";
-import { getBookings } from "../api/bookingApi";
+import { createCheckoutSession } from "../api/bookingApi";
 import { useTour } from "../hooks/useTours";
-import { useReviewStore } from "../store/useReviewStore";
+import { useAuth } from "../hooks/useAuth";
 
 import {
   FiClock,
@@ -51,9 +51,11 @@ window.scrollTo(0, 0);
     fetchTourBySlug,
     setCurrentTour,
     loading: tourLoading,
-  } = useTour(); // ✅ unified hook
-
+  } = useTour();
+const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
   const { reviews, fetchReviewsByTour, loading: reviewLoading } = useReviews();
+
   const [selectedDate, setSelectedDate] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const mapRef = useRef(null);
@@ -91,18 +93,14 @@ useEffect(() => {
 
   useEffect(() => {
     if (!slug) return;
-
     // Wait for persisted tours hydration
     if (tours.length === 0) return;
-
     const cached = tours.find((t) => t.slug === slug);
-
     if (cached) {
       setCurrentTour(cached);
       fetchReviewsByTour(cached._id);
       return;
     }
-
     // Fallback: Fetch via slug
     fetchTourBySlug(slug).then((tourFromApi) => {
       if (tourFromApi?._id) {
@@ -436,17 +434,35 @@ useEffect(() => {
                 </Badge>
               </HStack>
 
-              <Button
-                size="lg"
-                bg={!selectedDate ? "gray.400" : "black"}
-                color="white"
-                w="100%"
-                isDisabled={!selectedDate}
-                _hover={!selectedDate ? {} : { bg: "gray.800" }}
-                onClick={() => getBookings(tour._id, selectedDate)}
-              >
-                {selectedDate ? "Confirm Booking" : "Select a Date First"}
-              </Button>
+<Button
+  size="lg"
+  bg={!selectedDate ? "gray.400" : "black"}
+  color="white"
+  w="100%"
+  isDisabled={!selectedDate}
+  _hover={!selectedDate ? {} : { bg: "gray.800" }}
+  onClick={async () => {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const checkoutUrl = await createCheckoutSession(tour._id);
+      window.location.href = checkoutUrl; 
+    } catch (err) {
+      console.error("Booking error:", err);
+    }
+  }}
+>
+  {!isLoggedIn
+    ? "Login to Book"
+    : selectedDate
+    ? "Confirm Booking"
+    : "Select a Date First"}
+</Button>;
+
+
 
               <VStack spacing={1} fontSize="sm" color="gray.500" mt={4}>
                 <HStack>

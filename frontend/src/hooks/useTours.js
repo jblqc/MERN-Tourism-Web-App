@@ -14,25 +14,18 @@ export const useTour = () => {
     fetchTourById,
     setCurrentTour,
     fetchCountries,
+    fetchStats,
+    fetchMonthlyPlan,
   } = useTourStore();
 
-  /* ------------------------------
-     STATS (STATIC FOR NOW)
-  ------------------------------ */
   const stats = [
     { label: "Guided Tours Annually", value: "500+" },
     { label: "Satisfaction Rate", value: "90.5%" },
     { label: "Destinations", value: "150+" },
   ];
 
-  /* ------------------------------
-     SAFETY — ALWAYS ARRAY
-  ------------------------------ */
   const safeTours = Array.isArray(tours) ? tours : [];
 
-  /* ------------------------------
-     FEATURED + HERO (NO NORMALIZATION)
-  ------------------------------ */
   const shuffled = useMemo(
     () => [...safeTours].sort(() => 0.5 - Math.random()),
     [safeTours]
@@ -63,6 +56,8 @@ export const useTour = () => {
     fetchTourBySlug,
     fetchTourById,
     fetchCountries,
+    fetchStats,
+    fetchMonthlyPlan,
 
     // STATES
     loading: loadingTour,

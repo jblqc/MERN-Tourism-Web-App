@@ -8,21 +8,14 @@ const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const Email = require("../utils/email");
-const { sendSms } = require("../utils/sms");
-
-const { OAuth2Client } = require("google-auth-library");
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// Twilio client (only define ONCE)
 const twilio = require("twilio");
+const { OAuth2Client } = require("google-auth-library");
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const twilio_client = twilio(
   process.env.TWILIO_SID,
   process.env.TWILIO_AUTH_TOKEN
 );
-
-// -----------------------------------------------------------------------------
-// HELPERS
-// -----------------------------------------------------------------------------
 
 /* SIGN TOKEN */
 const signToken = (id) =>

@@ -26,16 +26,17 @@ export const useTourStore = create(
         distances: [],
         loading: false,
         error: null,
-        setCurrentTour: (tour) => set({ currentTour: tour }),
 
         /* ---------------------------------
          * FETCH ALL TOURS
          * --------------------------------- */
+        setCurrentTour: (tour) => set({ currentTour: tour }),
+
         fetchTours: async () => {
           set({ loading: true });
           try {
             const res = await getAllTours();
-            set({ tours: res }); // res IS the doc array
+            set({ tours: res });
           } catch (err) {
             set({ error: err.message });
           } finally {
@@ -50,7 +51,7 @@ export const useTourStore = create(
           set({ loading: true });
           try {
             const res = await getTourById(id);
-            set({ currentTour: res }); // ✅ FIX
+            set({ currentTour: res });
             return res.data.doc;
           } catch (err) {
             set({ error: err.message });
@@ -66,7 +67,7 @@ export const useTourStore = create(
           set({ loading: true });
           try {
             const res = await getTop5Cheap();
-            set({ topTours: res }); // ✅ FIX
+            set({ topTours: res });
           } catch (err) {
             set({ error: err.message });
           } finally {
@@ -80,7 +81,7 @@ export const useTourStore = create(
         fetchStats: async () => {
           try {
             const res = await getTourStats();
-            set({ stats: res }); // ✅ FIX
+            set({ stats: res });
           } catch (err) {
             set({ error: err.message });
           }
@@ -91,20 +92,19 @@ export const useTourStore = create(
          * --------------------------------- */
         fetchMonthlyPlan: async (year) => {
           try {
-            const res = await getMonthlyPlan(year);
-            set({ monthlyPlan: res }); // ✅ FIX
+            const res = await getMonthlyPlan(year); // pass it correctly
+            set({ monthlyPlan: res });
           } catch (err) {
             set({ error: err.message });
           }
         },
-
         /* ---------------------------------
          * DISTANCES
          * --------------------------------- */
         fetchDistances: async (lat, lng, unit) => {
           try {
             const res = await getDistances(lat, lng, unit);
-            set({ distances: res }); // backend returns {data: distances}
+            set({ distances: res });
           } catch (err) {
             set({ error: err.message });
           }

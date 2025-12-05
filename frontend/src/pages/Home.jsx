@@ -42,7 +42,14 @@ import "react-date-range/dist/theme/default.css";
 import defaultImg from "../assets/default.jpg";
 
 export default function Home() {
-  const { filters, setFilter, applyFilters, clearAllFilters } = useFilter();
+  const {
+    filters,
+    setFilter,
+    applyFilters,
+    clearAllFilters,
+    fetchHomepageStats,
+    formattedStats,
+  } = useFilter();
 
   const {
     tours,
@@ -53,6 +60,7 @@ export default function Home() {
     fetchTours,
     stats,
     loading,
+    fetchMonthlyPlan,
   } = useTour();
   const loaded = useRef(false);
 
@@ -77,11 +85,72 @@ export default function Home() {
   useEffect(() => {
     if (loaded.current) return;
     loaded.current = true;
+    fetchHomepageStats();
 
     fetchTours();
     fetchCountries();
     clearAllFilters(); // Clear only when landing on Home
   }, []);
+  const CountUp = ({ end, duration = 1200 }) => {
+    const [value, setValue] = useState(0);
+
+    useEffect(() => {
+      let start = 0;
+      const endValue = parseInt(end.replace(/[^0-9]/g, "")) || 0;
+      if (endValue === 0) return setValue(0);
+
+      const increment = endValue / (duration / 16);
+
+      const handle = setInterval(() => {
+        start += increment;
+        if (start >= endValue) {
+          clearInterval(handle);
+          setValue(endValue);
+        } else {
+          setValue(Math.floor(start));
+        }
+      }, 16);
+
+      return () => clearInterval(handle);
+    }, [end]);
+
+    return <>{value.toLocaleString()}</>;
+  };
+  const countryFlag = (name) => {
+    const flags = {
+      Philippines: "🇵🇭",
+      Japan: "🇯🇵",
+      France: "🇫🇷",
+      Thailand: "🇹🇭",
+      Nepal: "🇳🇵",
+    };
+    return flags[name] || "🌍";
+  };
+  const ratingColor = (rating) => {
+    if (rating >= 4.8) return "green.400";
+    if (rating >= 4.5) return "yellow.400";
+    return "orange.400";
+  };
+
+  const StatCard = ({ value, label, icon }) => (
+    <VStack
+      bg="white"
+      p={6}
+      borderRadius="xl"
+      shadow="md"
+      _hover={{ shadow: "xl", transform: "translateY(-4px)" }}
+      transition="0.2s"
+    >
+      <Icon as={icon} boxSize={8} color="purple.400" />
+      <Heading fontSize="4xl" fontWeight="bold">
+        {value}
+      </Heading>
+      <Text fontSize="lg" color="gray.600">
+        {label}
+      </Text>
+    </VStack>
+  );
+
   if (loading)
     return (
       <Container textAlign="center" py={10}>
@@ -276,26 +345,67 @@ export default function Home() {
         </VStack>
       </Box>
 
-      {/* STATS + FEATURED */}
+      {/* HOMEPAGE STATS SECTION */}
       <Container maxW="7xl" py={20} textAlign="center">
-        <Heading mb={2}>
-          Travella creates inspiring, budget-friendly travel experiences.
-        </Heading>
+        <Heading mb={2}>Trusted by travelers around the globe.</Heading>
         <Text color="gray.600" mb={10}>
-          that our customers love.
+          Real numbers from our growing community.
         </Text>
 
-        <SimpleGrid columns={[1, 3]} spacing={6} mb={12}>
-          {stats.map((s) => (
-            <VStack key={s.label}>
-              <Heading fontSize="3xl">{s.value}</Heading>
-              <Text color="gray.500">{s.label}</Text>
-            </VStack>
-          ))}
+        {/* MAIN COUNTS */}
+        <SimpleGrid columns={[1, 3]} spacing={10} mb={16}>
+          <StatCard
+            value={<CountUp end={formattedStats?.totalTours || "0"} />}
+            label="Tours Available"
+            icon={FiSearch}
+          />
+
+          <StatCard
+            value={<CountUp end={formattedStats?.totalReviews || "0"} />}
+            label="Verified Reviews"
+            icon={FiStar}
+          />
+
+          <StatCard
+            value={<CountUp end={formattedStats?.totalBookings || "0"} />}
+            label="Successful Bookings"
+            icon={FiSearch}
+          />
         </SimpleGrid>
 
+        {/* TOP COUNTRIES */}
+        <Heading size="md" mb={6}>
+          Where People Travel Most
+        </Heading>
+
+        <HStack justify="center" spacing={4} wrap="wrap" mb={14}>
+          {formattedStats?.topCountries?.length > 0 ? (
+            formattedStats.topCountries.map((c) => (
+              <Box
+                key={c.country}
+                px={4}
+                py={2}
+                borderRadius="full"
+                bg="purple.50"
+                color="purple.600"
+                fontWeight="semibold"
+                shadow="sm"
+              >
+                {countryFlag(c.country)} {c.country}
+              </Box>
+            ))
+          ) : (
+            <Text>No country data available</Text>
+          )}
+        </HStack>
+
+        {/* TOP TOURS */}
+        <Heading size="md" mb={6}>
+          Top Rated Adventures
+        </Heading>
+
         <SimpleGrid columns={[1, 3]} spacing={6}>
-          {featuredTours.map((tour) => (
+          {formattedStats?.topRatedTours?.map((tour) => (
             <TourCard key={tour._id} tour={tour} />
           ))}
         </SimpleGrid>

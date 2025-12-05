@@ -1,6 +1,9 @@
 const sharp = require("sharp");
 const multer = require("multer");
 const Tour = require("../models/tourModel");
+const Review = require("../models/reviewModel");
+const Booking = require("../models/bookingModel");
+
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const factory = require("./handlerFactory");
@@ -120,8 +123,8 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     {
       $match: {
         startDates: {
-          $gte: new Date(year, 1, 1),
-          $lte: new Date(year, 12, 31),
+          $gte: new Date(year, 0, 1),
+          $lte: new Date(year, 11, 31),
         },
       },
     },
@@ -213,6 +216,72 @@ exports.getAllCountries = catchAsync(async (req, res, next) => {
     results: countries.length,
     data: {
       countries,
+    },
+  });
+});
+exports.getHomepageStats = catchAsync(async (req, res, next) => {
+  const [
+    totalTours,
+    totalReviews,
+    totalBookings,
+    topCountries,
+    topRatedTours,
+    guideCount,
+  ] = await Promise.all([
+    Tour.countDocuments(),
+
+    Review.countDocuments(),
+
+    Booking.countDocuments({ paid: true }),
+
+    Tour.aggregate([
+      {
+        $group: {
+          _id: "$country",
+          numTours: { $sum: 1 },
+        },
+      },
+      { $sort: { numTours: -1 } },
+      { $limit: 5 },
+      { $project: { _id: 0, country: "$_id", numTours: 1 } },
+    ]),
+
+    Tour.aggregate([
+      { $sort: { ratingsAverage: -1, ratingsQuantity: -1 } },
+      { $limit: 3 },
+      {
+        $project: {
+          _id: 1,
+          slug: 1,
+          name: 1,
+          price: 1,
+          summary: 1,
+          ratingsAverage: 1,
+          imageCover: 1,
+        },
+      },
+    ]),
+
+    Tour.aggregate([
+      { $unwind: "$guides" },
+      {
+        $group: {
+          _id: "$guides",
+        },
+      },
+      { $count: "guideCount" },
+    ]),
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      totalTours,
+      totalReviews,
+      totalBookings,
+      topCountries,
+      topRatedTours,
+      guideCount: guideCount[0]?.guideCount || 0,
     },
   });
 });

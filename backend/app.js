@@ -49,68 +49,6 @@ app.set("views", path.join(__dirname, "views"));
 
 // Static files
 app.use(express.static(path.join(__dirname, "public")));
-// app.use(
-//   helmet.contentSecurityPolicy({
-//     directives: {
-//       defaultSrc: ["'self'"],
-//       scriptSrc: [
-//         "'self'",
-//         "'unsafe-eval'", // 🧩 allow Parcel’s eval() scripts
-//         "'unsafe-inline'", // 🧩 allow inline bootstrap for HMR
-//         "https://js.stripe.com",
-//         "https://accounts.google.com", // ⭐ REQUIRED
-//         "https://www.gstatic.com",
-//         "https://api.mapbox.com",
-//         "https://cdnjs.cloudflare.com",
-//         "blob:",
-//       ],
-//       scriptSrcElem: [
-//         "'self'",
-//         "'unsafe-inline'",
-//         "'unsafe-eval'",
-//         "https://js.stripe.com",
-//         "https://api.mapbox.com",
-//         "https://accounts.google.com/*",
-//         "https://www.gstatic.com",
-//         "https://cdnjs.cloudflare.com",
-//         "blob:",
-//       ],
-//       styleSrc: [
-//         "'self'",
-//         "https://api.mapbox.com",
-//         "https://fonts.googleapis.com",
-//         "'unsafe-inline'",
-//       ],
-//       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-//       imgSrc: [
-//         "'self'",
-//         "data:",
-//         "https://api.mapbox.com",
-//         "https://events.mapbox.com",
-//         "https://lh3.googleusercontent.com",
-//       ],
-//       connectSrc: [
-//         "'self'",
-//         "https://api.mapbox.com",
-//         "https://events.mapbox.com",
-//         "https://js.stripe.com",
-//         "https://r.stripe.com",
-//         "http://localhost:*",
-//         "ws://localhost:*",
-//         "ws://127.0.0.1:*",
-//       ],
-//       frameSrc: [
-//         "'self'",
-//         "https://js.stripe.com",
-//         "https://accounts.google.com/*",
-//       ],
-//       workerSrc: ["'self'", "blob:"],
-//       referrerPolicy: {
-//         policy: "strict-origin-when-cross-origin",
-//       },
-//     },
-//   })
-// );
 
 // Logging
 if (process.env.NODE_ENV === "development") {

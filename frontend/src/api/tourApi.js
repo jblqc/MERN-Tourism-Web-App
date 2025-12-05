@@ -38,8 +38,8 @@ export const getTop5Cheap = async () => {
 };
 
 // GET monthly plan
-export const getMonthlyPlan = async () => {
-  const res = await axiosClient.get("/tours/month");
+export const getMonthlyPlan = async (year) => {
+  const res = await axiosClient.get(`/tours/monthly-plan?year=${year}`);
   return res.data.data.plan;
 };
 
@@ -80,4 +80,8 @@ export const getTourReviews = async (tourId) => {
 export const getCountries = async () => {
   const res = await axiosClient.get("/tours/countries");
   return res.data.data.countries;
+};
+export const getHomepageStats = async () => {
+  const res = await axiosClient.get("/tours/homepage-stats");
+  return res.data.data; // { totalTours, totalReviews, ... }
 };

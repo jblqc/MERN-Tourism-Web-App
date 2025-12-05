@@ -1,11 +1,13 @@
 // src/store/useFilterStore.js
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { getAllTours } from "../api/tourApi";
+import { getAllTours, getHomepageStats } from "../api/tourApi";
 
 export const useFilterStore = create(
   devtools((set, get) => ({
-    // FILTER STATE
+    // =============================
+    //      FILTER STATE
+    // =============================
     filters: {
       search: "",
       country: "",
@@ -25,7 +27,7 @@ export const useFilterStore = create(
           [key]: value,
         },
       }),
-  
+
     clearFilter: (key) =>
       set({
         filters: {
@@ -59,7 +61,7 @@ export const useFilterStore = create(
       return p.toString();
     },
 
-    // APPLY FILTERS -> returns the fetched data
+    // APPLY FILTERS -> Fetch tours
     applyFilters: async () => {
       set({ loading: true });
       try {
@@ -69,6 +71,32 @@ export const useFilterStore = create(
         return data;
       } finally {
         set({ loading: false });
+      }
+    },
+
+    // =============================
+    //      HOMEPAGE STATS STATE
+    // =============================
+
+    homepageStats: null,
+    statsLoading: false,
+    statsError: null,
+
+    // Fetch homepage stats
+    fetchHomepageStats: async () => {
+      set({ statsLoading: true, statsError: null });
+      try {
+        const stats = await getHomepageStats();
+        set({ homepageStats: stats, statsLoading: false });
+        return stats;
+      } catch (err) {
+        set({
+          statsLoading: false,
+          statsError:
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to load homepage stats",
+        });
       }
     },
   }))

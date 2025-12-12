@@ -111,7 +111,14 @@ const tourSchema = new mongoose.Schema(
         type: mongoose.Schema.ObjectId,
         ref: "User",
       },
-    ],
+    ],category: {
+  type: String,
+  enum: ['beach', 'adventure', 'culture', 'city', 'nature', 'winter', 'luxury', 'custom'],
+  default: 'custom'
+},
+tags: [String],
+isFeatured: { type: Boolean, default: false },
+
   },
 
   {

@@ -40,6 +40,7 @@ import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import defaultImg from "../assets/default.jpg";
+import Filter from "../components/Filter";
 
 export default function Home() {
   const {
@@ -229,119 +230,7 @@ export default function Home() {
           </Text>
 
           {/* Filter Card */}
-          <GlassBox>
-            <Box>
-              <Tabs variant="soft-rounded" colorScheme="purple" mb={4}>
-                <Flex justify="space-between" align="center">
-                  {/* Tabs */}
-                  <TabList justifyContent="center" flex="1">
-                    <Tab color="white">Destinations</Tab>
-                    <Tab color="white" onClick={() => navigate("/tours")}>
-                      Tours
-                    </Tab>
-                    <Tab color="white">Packages</Tab>
-                  </TabList>
-
-                  {/* RESET FILTER ICON */}
-                  <Icon
-                    as={MdFilterAltOff}
-                    boxSize={6}
-                    cursor="pointer"
-                    color={
-                      Object.values(filters).some((v) => v !== "")
-                        ? "white"
-                        : "whiteAlpha.400"
-                    }
-                    onClick={() => {
-                      if (Object.values(filters).some((v) => v !== "")) {
-                        clearAllFilters();
-                      }
-                    }}
-                    _hover={{
-                      color: Object.values(filters).some((v) => v !== "")
-                        ? "purple.300"
-                        : "whiteAlpha.400",
-                    }}
-                  />
-                </Flex>
-              </Tabs>
-            </Box>
-            <SimpleGrid columns={[1, 5]} spacing={3}>
-              <Input
-                placeholder="Find a Destination"
-                color="white"
-                _placeholder={{ color: "white" }} // placeholder color
-                borderColor={"whiteAlpha.500"}
-                value={filters.search}
-                onChange={(e) => setFilter("search", e.target.value)}
-              />
-
-              <Select
-                placeholder="Select Price Range"
-                borderColor={"whiteAlpha.500"}
-                onChange={(e) => {
-                  const value = e.target.value;
-
-                  if (!value) {
-                    setFilter("priceMin", "");
-                    setFilter("priceMax", "");
-                    return;
-                  }
-
-                  if (value === "$0-$500") {
-                    setFilter("priceMin", 0);
-                    setFilter("priceMax", 500);
-                  } else if (value === "$500-$1000") {
-                    setFilter("priceMin", 500);
-                    setFilter("priceMax", 1000);
-                  } else if (value === "$1000+") {
-                    setFilter("priceMin", 1000);
-                    setFilter("priceMax", "");
-                  }
-                }}
-              >
-                <option>$0-$500</option>
-                <option>$500-$1000</option>
-                <option>$1000+</option>
-              </Select>
-
-              <Select
-                placeholder="All Countries"
-                color="white"
-                borderColor={"whiteAlpha.500"}
-                value={filters.country}
-                onChange={(e) => setFilter("country", e.target.value)}
-              >
-                {countries.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </Select>
-
-              <Button
-                variant="outline"
-                borderColor="whiteAlpha.500"
-                color="white"
-                onClick={() => setOpenCalendar(true)}
-              >
-                {filters.dateFrom && filters.dateTo
-                  ? `${filters.dateFrom} → ${filters.dateTo}`
-                  : "Select Date Range"}
-              </Button>
-
-              <Button
-                colorScheme="purple"
-                rightIcon={<FiSearch />}
-                onClick={async () => {
-                  await applyFilters();
-                  navigate("/tours");
-                }}
-              >
-                Discover
-              </Button>
-            </SimpleGrid>
-          </GlassBox>
+          <Filter mode="home" />
         </VStack>
       </Box>
 

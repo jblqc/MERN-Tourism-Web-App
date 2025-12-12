@@ -14,6 +14,7 @@ import { useTour } from "../hooks/useTours";
 import { useFilter } from "../hooks/useFilter";
 import TourCard from "../components/TourCard";
 import PageTransition from "../components/PageTransition";
+import Filter from "../components/Filter";
 export default function Tours() {
   const {
     filters,
@@ -43,57 +44,7 @@ export default function Tours() {
 
         {/* FILTER BAR */}
         <Container maxW="7xl" mb={10}>
-          <SimpleGrid columns={[1, 5]} spacing={4}>
-            <Input
-              placeholder="Find a Destination"
-              value={filters.search}
-              onChange={(e) => setFilter("search", e.target.value)}
-            />
-
-            <Select
-              placeholder="Price Range"
-              onChange={(e) => {
-                const v = e.target.value;
-                if (!v) {
-                  setFilter("priceMin", "");
-                  setFilter("priceMax", "");
-                  return;
-                }
-                if (v === "$0-$500") {
-                  setFilter("priceMin", 0);
-                  setFilter("priceMax", 500);
-                } else if (v === "$500-$1000") {
-                  setFilter("priceMin", 500);
-                  setFilter("priceMax", 1000);
-                } else if (v === "$1000+") {
-                  setFilter("priceMin", 1000);
-                  setFilter("priceMax", "");
-                }
-              }}
-            >
-              <option>$0-$500</option>
-              <option>$500-$1000</option>
-              <option>$1000+</option>
-            </Select>
-
-            <Select
-              placeholder="Country"
-              value={filters.country}
-              onChange={(e) => setFilter("country", e.target.value)}
-            >
-              {countries.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </Select>
-
-            <Button
-              colorScheme="purple"
-              rightIcon={<FiSearch />}
-              onClick={applyFilters}
-            >
-              Apply
-            </Button>
-          </SimpleGrid>
+          <Filter mode="tours"/>
         </Container>
 
         <Container maxW="7xl">

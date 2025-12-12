@@ -55,7 +55,7 @@ export default function Header() {
             fontWeight="medium"
             _hover={{ textDecoration: "none", color: "blue.300" }}
           >
-            All Tours
+            Travel
           </ChakraLink>
         </HStack>
 

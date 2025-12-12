@@ -7,6 +7,7 @@ import AppLayout from "./layouts/AppLayout";
 import Home from "./pages/Home";
 import Tours from "./pages/Tours";
 import TourDetail from "./pages/TourDetail";
+import Packages from "./pages/Packages";
 import Login from "./pages/Login";
 import Account from "./pages/Account";
 import ErrorPage from "./pages/ErrorPage";
@@ -27,6 +28,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
         <Route path="/tours" element={<Tours />} />
+        <Route path="/packages" element={<Packages />} />
         <Route path="/tour/:slug" element={<TourDetail />} />
         <Route path="/me" element={<Account />} />
         <Route path="*" element={<ErrorPage />} />

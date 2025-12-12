@@ -36,19 +36,19 @@ export default function Header() {
     <Box
       position="fixed"
       px={8}
-      py={4}
+      py={1}
       top="0"
       left="0"
       w="100%"
       zIndex="1000"
       transition="0.3s ease"
-      bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
+      bg={scrolled ? "rgba(254, 255, 254, 0.63)" : "white"}
       backdropFilter={scrolled ? "blur(10px)" : "none"}
       boxShadow={scrolled ? "md" : "none"}
     >
       <Flex align="center">
         {/* LEFT NAV */}
-        <HStack spacing={6}>
+        <HStack spacing={2}>
           <ChakraLink
             as={Link}
             to="/"
@@ -63,13 +63,12 @@ export default function Header() {
 
         {/* CENTER LOGO */}
         <Link to="/">
-          <Heading size="md">
             <img
-              src="/img/logo-white.png"
-              alt="Natours logo"
-              style={{ height: "35px" }}
+              src="/img/logo_h.png"
+              alt="Travel logo"
+              style={{ height: "60px" , padding:"0"}}
+              
             />
-          </Heading>
         </Link>
 
         <Spacer />

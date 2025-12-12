@@ -135,10 +135,10 @@ export default function Home() {
   const StatCard = ({ value, label, icon }) => (
     <VStack
       bg="white"
-      p={6}
+      p={5}
       borderRadius="xl"
       shadow="md"
-      _hover={{ shadow: "xl", transform: "translateY(-4px)" }}
+      _hover={{ shadow: "xl", transform: "translateY(-px)" }}
       transition="0.2s"
     >
       <Icon as={icon} boxSize={8} color="purple.400" />

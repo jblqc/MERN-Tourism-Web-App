@@ -14,7 +14,7 @@ export default function Footer() {
       >
         {/* Brand / Copy */}
         <Text color="gray.600" fontSize="sm">
-          © {new Date().getFullYear()} Natours. All rights reserved.
+          © {new Date().getFullYear()} Travel. All rights reserved.
         </Text>
 
         {/* Social icons */}

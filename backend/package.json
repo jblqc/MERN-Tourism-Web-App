@@ -1,7 +1,7 @@
 {
   "name": "starter",
   "version": "1.0.0",
-  "description": "Natours backend API server",
+  "description": "Travel backend API server",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",

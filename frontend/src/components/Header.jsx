@@ -75,53 +75,41 @@ export default function Header() {
 
         {/* RIGHT NAV */}
         <HStack spacing={4}>
-          {isLoggedIn ? (
-            <>
-              {/* LOGOUT BUTTON */}
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                Log out
-              </Button>
+          {isLoggedIn && user ? (
+  <>
+    <Button variant="ghost" size="sm" onClick={handleLogout}>
+      Log out
+    </Button>
 
-              {/* PROFILE LINK */}
-              <Link to="/me">
-                <Flex align="center" gap={2} cursor="pointer">
-                  <Avatar
-                    size="sm"
-                    name={user?.name}
-                    src={
-                      user?.photo?.startsWith("http")
-                        ? user.photo
-                        : `${import.meta.env.VITE_BACKEND_URL}/img/users/${
-                            user.photo
-                          }`
-                    }
-                    border="2px solid white"
-                  />
-                  <Text fontWeight="medium">{user?.name?.split(" ")[0]}</Text>
-                </Flex>
-              </Link>
-            </>
-          ) : (
-            <>
-              <Button
-                as={Link}
-                to="/login"
-                size="sm"
-                bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
-              >
-                Log in
-              </Button>
+    <Link to="/me?tab=profile">
+      <Flex align="center" gap={2} cursor="pointer">
+        <Avatar
+          size="sm"
+          name={user.name}
+          src={
+            user.photo?.startsWith("http")
+              ? user.photo
+              : `${import.meta.env.VITE_BACKEND_URL}/img/users/${user.photo}`
+          }
+          border="2px solid white"
+        />
+        <Text fontWeight="medium">
+          {user.name?.split(" ")[0]}
+        </Text>
+      </Flex>
+    </Link>
+  </>
+) : (
+  <>
+    <Button as={Link} to="/login" size="sm">
+      Log in
+    </Button>
+    <Button as={Link} to="/signup" size="sm">
+      Sign up
+    </Button>
+  </>
+)}
 
-              <Button
-                as={Link}
-                to="/signup"
-                size="sm"
-                bg={scrolled ? "rgba(254, 255, 254, 0.32)" : "white"}
-              >
-                Sign up
-              </Button>
-            </>
-          )}
         </HStack>
       </Flex>
     </Box>

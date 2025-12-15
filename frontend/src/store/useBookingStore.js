@@ -1,33 +1,37 @@
 // src/store/useBookingStore.js
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
-import { fetchAllBookings } from "../api/bookingApi";
+import { devtools } from "zustand/middleware";
+import { fetchMyBookings } from "../api/bookingApi";
 
 export const useBookingStore = create(
   devtools(
-    persist(
-      (set, get) => ({
-        bookings: [],
-        loading: false,
-        error: null,
+    (set) => ({
+      bookings: [],
+      loading: false,
+      error: null,
 
-        fetchBookings: async () => {
-          set({ loading: true });
-          try {
-            const data = await fetchAllBookings();
-            set({ bookings: data });
-          } catch (err) {
-            set({ error: err.message });
-          } finally {
-            set({ loading: false });
-          }
-        },
-      }),
-      {
-        name: "booking-storage",
-        getStorage: () => localStorage,
-      }
-    ),
+      fetchBookings: async () => {
+        set({ loading: true, error: null });
+
+        try {
+          const bookings = await fetchMyBookings();
+          set({ bookings, loading: false });
+        } catch (err) {
+          set({
+            loading: false,
+            error:
+              err.response?.data?.message ||
+              err.message ||
+              "Failed to load bookings",
+          });
+        }
+      },
+
+      // optional but good practice
+      clearBookings: () => {
+        set({ bookings: [], loading: false, error: null });
+      },
+    }),
     { name: "BookingStore" }
   )
 );

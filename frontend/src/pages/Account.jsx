@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useBookingStore } from "../store/useBookingStore";
 import {
   Box,
   Grid,
@@ -24,16 +26,21 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  ModalFooter,
+  ModalFooter,  Spinner, Badge
+
 } from "@chakra-ui/react";
 
-import { FiUser, FiLock, FiSettings, FiPhone } from "react-icons/fi";
+import { FiUser, FiLock, FiSettings, FiPhone , FiCalendar} from "react-icons/fi";
 import { useToastMessage } from "../utils/toast";
 import { motion } from "framer-motion";
 
 const MotionBox = motion(Box);
 
 export default function Account() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab") || "profile";
+
   const {
     user,
     updateProfile,
@@ -42,7 +49,13 @@ export default function Account() {
     verifyPhoneVerificationOtp,
     checkPhoneUnique,
   } = useAuth();
+   const {
+    bookings,
+    fetchBookings,
+    loading: bookingsLoading,
+  } = useBookingStore();
   const { showSuccess, showError } = useToastMessage();
+
 
   /* ---------------------------------------------------------
      STATE
@@ -54,6 +67,7 @@ export default function Account() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
+
 
   // Colors
   const glassBg = useColorModeValue(
@@ -167,8 +181,18 @@ export default function Account() {
       setModalLoading(false);
     }
   };
-  if (!user) return <Text textAlign="center">Loading user…</Text>;
+useEffect(() => {
+  if (!searchParams.get("tab")) {
+    navigate("/me?tab=profile", { replace: true });
+  }
+}, []);
+useEffect(() => {
+  if (tab === "bookings") {
+    fetchBookings();
+  }
+}, [tab]);
 
+    if (!user) return <Text textAlign="center">Loading user…</Text>;
   return (
     <Box
       minH="100vh"
@@ -209,20 +233,38 @@ export default function Account() {
               <Text mt={4} fontSize="lg" fontWeight="bold" color="purple.700">
                 {user.name}
               </Text>
+<VStack spacing={2} mt={8} w="100%">
+  <SidebarLink
+    icon={FiUser}
+    label="My Profile"
+    active={tab === "profile"}
+    onClick={() => navigate("/me?tab=profile")}
+  />
 
-              <VStack spacing={2} mt={8} w="100%">
-                <SidebarLink icon={FiSettings} label="Settings" active />
-                <SidebarLink icon={FiUser} label="My Profile" />
-                <SidebarLink icon={FiSettings} label="My Bookings" />
-                <SidebarLink icon={FiSettings} label="My Reviews" />
-              </VStack>
+  <SidebarLink
+    icon={FiCalendar}
+    label="My Bookings"
+    active={tab === "bookings"}
+    onClick={() => navigate("/me?tab=bookings")}
+  />
+
+  <SidebarLink
+    icon={FiSettings}
+    label="My Reviews"
+    active={tab === "reviews"}
+    onClick={() => navigate("/me?tab=reviews")}
+  />
+</VStack>
+
             </Flex>
           </GridItem>
 
           {/* ------------------------- MAIN CONTENT ------------------------- */}
           <GridItem>
             <VStack spacing={10}>
-              {/* PROFILE CARD */}
+
+ {tab === "profile" && (
+  <>
               <MotionBox sx={glass} bg={glassBg} p={8} w="100%">
                 <CardHeader title="Profile Information" icon={FiUser} />
 
@@ -319,7 +361,6 @@ export default function Account() {
                 </form>
               </MotionBox>
 
-              {/* PASSWORD CARD */}
               <MotionBox sx={glass} bg={glassBg} p={8} w="100%">
                 <CardHeader title="Change Password" icon={FiLock} />
 
@@ -373,6 +414,44 @@ export default function Account() {
                   </VStack>
                 </form>
               </MotionBox>
+                    </>
+
+               )}
+
+               {tab === "bookings" && (
+                <MotionBox sx={glass} bg={glassBg} p={8} w="100%">
+                  <Heading size="lg" mb={6}>My Bookings</Heading>
+
+                  {bookingsLoading ? (
+                    <Spinner />
+                  ) : bookings.length ? (
+                    <VStack spacing={4} align="stretch">
+                      {bookings.map((b) => (
+                        <Box key={b._id} p={5} bg="whiteAlpha.800" borderRadius="lg">
+                          <HStack justify="space-between">
+                            <Text fontWeight="bold">{b.tour?.name}</Text>
+                            <Badge colorScheme="green">PAID</Badge>
+                          </HStack>
+
+                          <HStack mt={2} color="gray.600">
+                            <Icon as={FiCalendar} />
+                            <Text fontSize="sm">
+                              {new Date(b.createdAt).toLocaleDateString()}
+                            </Text>
+                          </HStack>
+
+                          <Text mt={2} fontWeight="semibold">
+                            ${b.price}
+                          </Text>
+                        </Box>
+                      ))}
+                    </VStack>
+                  ) : (
+                    <Text>No bookings yet.</Text>
+                  )}
+                </MotionBox>
+              )}
+
             </VStack>
           </GridItem>
         </Grid>
@@ -440,8 +519,7 @@ export default function Account() {
 }
 
 /* -------------------------- COMPONENTS -------------------------- */
-
-function SidebarLink({ icon, label, active = false }) {
+function SidebarLink({ icon, label, active = false, onClick }) {
   return (
     <Flex
       w="100%"
@@ -451,6 +529,7 @@ function SidebarLink({ icon, label, active = false }) {
       py={2}
       borderRadius="md"
       cursor="pointer"
+      onClick={onClick}
       bg={active ? "purple.200" : "whiteAlpha.500"}
       _hover={{ bg: "purple.100" }}
     >
@@ -459,6 +538,7 @@ function SidebarLink({ icon, label, active = false }) {
     </Flex>
   );
 }
+
 
 function CardHeader({ icon, title }) {
   return (

@@ -70,18 +70,24 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+const success = new URLSearchParams(window.location.search).get("success");
 
   /* ----------------------------------------------
      GOOGLE LOGIN BUTTON INIT
   ------------------------------------------------*/
-  useEffect(() => {
-    if (!isLogin) return;
+useEffect(() => {
+  if (!isLogin) return;
 
+  const timer = setTimeout(() => {
     initGoogleLoginButton(async (res) => {
       await googleLogin(res.credential);
       navigate("/");
     });
-  }, [isLogin]);
+  }, 100);
+
+  return () => clearTimeout(timer);
+}, [isLogin]);
+
 
   /* ----------------------------------------------
      LOGIN (email + password)

@@ -6,19 +6,29 @@ const router = express.Router();
 
 router.use(authController.protect);
 
-router.get('/checkout-session/:tourId', bookingController.getCheckoutSession);
+router.get(
+  '/my-bookings',
+  authController.protect,
+  bookingController.getMyBookings
+);
 
-router.use(authController.restrictTo('admin', 'lead-guide'));
 
+// Stripe checkout
+router.get(
+  '/checkout-session/:tourId',
+  bookingController.getCheckoutSession
+);
+
+// 🔒 ADMIN ONLY BELOW
 router
   .route('/')
-  .get(bookingController.getAllBookings)
-  .post(bookingController.createBooking);
+  .get(authController.restrictTo('admin', 'lead-guide'),bookingController.getAllBookings,)
+  .post(authController.restrictTo('admin', 'lead-guide'),bookingController.createBooking);
 
 router
   .route('/:id')
-  .get(bookingController.getBooking)
-  .patch(bookingController.updateBooking)
-  .delete(bookingController.deleteBooking);
+  .get(authController.restrictTo('admin', 'lead-guide'),bookingController.getBooking)
+  .patch(authController.restrictTo('admin', 'lead-guide'),bookingController.updateBooking)
+  .delete(authController.restrictTo('admin', 'lead-guide'),bookingController.deleteBooking);
 
 module.exports = router;

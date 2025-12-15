@@ -7,6 +7,7 @@ const router = express.Router();
 /* ---------------------- PUBLIC ROUTES ---------------------- */
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
+router.post("/google-login", authController.googleLogin);
 
 router.post("/send-email-code", authController.sendEmailCode);
 router.post("/verify-email-code", authController.verifyEmailCode);

@@ -132,6 +132,7 @@ export default function Home() {
     if (rating >= 4.5) return "yellow.400";
     return "orange.400";
   };
+const success = new URLSearchParams(window.location.search).get("success");
 
   const StatCard = ({ value, label, icon }) => (
     <VStack
@@ -233,6 +234,21 @@ export default function Home() {
           <Filter mode="home" />
         </VStack>
       </Box>
+{success && (
+  <Box
+    bg="green.50"
+    border="1px solid"
+    borderColor="green.200"
+    borderRadius="lg"
+    p={4}
+    mb={6}
+  >
+    <Heading size="md" color="green.600">
+      🎉 Booking Confirmed!
+    </Heading>
+    <Text>Your tour has been successfully booked.</Text>
+  </Box>
+)}
 
       {/* HOMEPAGE STATS SECTION */}
       <Container maxW="7xl" py={20} textAlign="center">

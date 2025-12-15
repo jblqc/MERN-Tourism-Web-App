@@ -131,26 +131,34 @@ export const useUserStore = create(
         /* ------------------------------------------------
          * GOOGLE LOGIN
          * ------------------------------------------------ */
-        googleLogin: async (credential) => {
-          try {
-            const res = await googleLoginApi(credential);
+       googleLogin: async (credential) => {
+  set({ loading: true, error: null });
 
-            // Save token
-            set({ token: res.token });
+  try {
+    const res = await googleLoginApi(credential);
 
-            // Fetch complete profile (always safer)
-            const me = await getMe();
+    set({
+      token: res.token,
+      isLoggedIn: true,
+    });
 
-            set({ user: me });
+    const me = await getMe();
 
-            return res;
-          } catch (err) {
-            set({
-              error: err.response?.data?.message || "Google login failed",
-            });
-            throw err;
-          }
-        },
+    set({
+      user: me,
+      loading: false,
+    });
+
+    return res;
+  } catch (err) {
+    set({
+      loading: false,
+      error: err.response?.data?.message || "Google login failed",
+    });
+    throw err;
+  }
+},
+
 
         /* ------------------------------------------------
          * EMAIL CODE LOGIN
@@ -159,16 +167,37 @@ export const useUserStore = create(
           return await sendEmailCode(email);
         },
 
-        verifyEmailCode: async (email, code) => {
-          const data = await verifyEmailCode(email, code);
+       verifyEmailCode: async (email, code) => {
+  set({ loading: true, error: null });
 
-          set({ token: data.token });
+  try {
+    const data = await verifyEmailCode(email, code);
 
-          const me = await getMe();
-          set({ user: me });
+    // Save token
+    set({
+      token: data.token,
+      isLoggedIn: true,
+    });
 
-          return me;
-        },
+    // Fetch full user profile
+    const me = await getMe();
+
+    set({
+      user: me,
+      loading: false,
+      ready: true,
+    });
+
+    return me;
+  } catch (err) {
+    set({
+      loading: false,
+      error: err.response?.data?.message || "Email verification failed",
+    });
+    throw err;
+  }
+},
+
 
         /* ------------------------------------------------
          * SMS OTP LOGIN
@@ -181,15 +210,20 @@ export const useUserStore = create(
           const res = await apiVerifySms(phone, code);
 
           // Save token returned from backend
-          set({ token: res.token });
+set({
+      token: res.token,
+      isLoggedIn: true,
+    });
 
           // Fetch full profile (important!)
           const me = await getMe();
 
-          set({
-            user: me,
-            isLoggedIn: true,
-          });
+             set({
+      user: me,
+      loading: false,
+      ready: true,
+    });
+
 
           return me;
         },

@@ -224,12 +224,20 @@ exports.googleLogin = catchAsync(async (req, res, next) => {
   const { credential } = req.body;
   if (!credential) return next(new AppError("No Google credential", 400));
 
-  const ticket = await client.verifyIdToken({
-    idToken: credential,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
+  let ticket;
+
+  try {
+    ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+  } catch (err) {
+    console.error("GOOGLE VERIFY FAILED", err.message);
+    return next(new AppError("Invalid Google token", 401));
+  }
 
   const payload = ticket.getPayload();
+
   let user = await User.findOne({ email: payload.email });
 
   if (!user) {
@@ -243,6 +251,7 @@ exports.googleLogin = catchAsync(async (req, res, next) => {
 
   createSendToken(user, 200, req, res);
 });
+
 
 // -----------------------------------------------------------------------------
 // EMAIL LOGIN (MAGIC CODE)

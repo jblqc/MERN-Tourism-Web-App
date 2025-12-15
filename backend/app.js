@@ -17,6 +17,8 @@ const reviewRouter = require("./routes/reviewRoutes");
 const viewRouter = require("./routes/viewRoutes");
 const bookingRouter = require("./routes/bookingRoutes");
 const packageRouter = require("./routes/packageRoutes");
+const stripeController = require("./controllers/bookingController");
+
 
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
@@ -40,9 +42,10 @@ app.use(
   })
 );
 
-// REQUIRED for popup login
+// FULLY DISABLE COOP for Google Login
 app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  res.removeHeader("Cross-Origin-Opener-Policy");
+  res.removeHeader("Cross-Origin-Embedder-Policy");
   next();
 });
 // View engine
@@ -65,6 +68,11 @@ app.use(
     windowMs: 60 * 60 * 1000,
     message: "Too many requests from this IP, please try again in an hour!",
   })
+);
+app.post(
+  "/webhook/stripe",
+  express.raw({ type: "application/json" }),
+  stripeController.webhookCheckout
 );
 
 // Body parser

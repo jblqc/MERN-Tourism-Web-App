@@ -27,7 +27,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://mern-tourism-web-app-fe.onrender.com",
     credentials: true,
   })
 );

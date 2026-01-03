@@ -8,8 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
-dist-ssr
 *.local
 
 # Editor directories and files
@@ -25,7 +23,6 @@ dist-ssr
 .cache*
 node_modules/
 .env
-dist/
 .DS_Store
 package-lock.json
 .cache/*

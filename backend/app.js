@@ -19,19 +19,24 @@ const bookingRouter = require("./routes/bookingRoutes");
 const packageRouter = require("./routes/packageRoutes");
 const stripeController = require("./controllers/bookingController");
 
-
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
 
 const app = express();
 
+// ---------- CORS ----------
 app.use(
   cors({
-    origin: "https://mern-tourism-web-app-fe.onrender.com",
+    origin: [
+      "https://mern-tourism-web-app-fe.onrender.com", // deployed frontend
+      "http://localhost:5173",                         // local dev frontend
+    ],
     credentials: true,
   })
 );
-// Disable only the things that break Google Login
+
+
+// ---------- Security ----------
 app.use(
   helmet({
     contentSecurityPolicy: false,
@@ -41,30 +46,25 @@ app.use(
     frameguard: false,
   })
 );
-
-// FULLY DISABLE COOP for Google Login
 app.use((req, res, next) => {
   res.removeHeader("Cross-Origin-Opener-Policy");
   res.removeHeader("Cross-Origin-Embedder-Policy");
   next();
 });
-// View engine
+
+// ---------- View engine ----------
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
-app.use((req, res, next) => {
-  console.log('Origin:', req.headers.origin);
-  next();
-});
 
-// Static files
+// ---------- Static files ----------
 app.use(express.static(path.join(__dirname, "public")));
 
-// Logging
+// ---------- Logging ----------
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// Rate Limiting
+// ---------- Rate Limiting ----------
 app.use(
   "/api",
   rateLimit({
@@ -73,22 +73,24 @@ app.use(
     message: "Too many requests from this IP, please try again in an hour!",
   })
 );
+
+// ---------- Stripe webhook ----------
 app.post(
   "/webhook/stripe",
   express.raw({ type: "application/json" }),
   stripeController.webhookCheckout
 );
 
-// Body parser
+// ---------- Body parser ----------
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(cookieParser());
 
-// Data sanitization
+// ---------- Data sanitization ----------
 app.use(mongoSanitize());
 app.use(xss());
 
-// Prevent parameter pollution
+// ---------- Prevent parameter pollution ----------
 app.use(
   hpp({
     whitelist: [
@@ -103,28 +105,27 @@ app.use(
 );
 app.use(compression());
 
-// Custom middleware
+// ---------- Custom middleware ----------
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   res.locals.STRIPE_PUBLIC_KEY = process.env.STRIPE_PUBLIC_KEY;
-
   next();
 });
 
-// Routers
+// ---------- Routers ----------
 app.use("/", viewRouter);
-
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/reviews", reviewRouter);
 app.use("/api/v1/booking", bookingRouter);
 app.use("/api/v1/packages", packageRouter);
- 
-// Handle unhandled routes
+
+// ---------- Handle unhandled routes ----------
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 
+// ---------- Global error handler ----------
 app.use(errorController);
 
 module.exports = app;

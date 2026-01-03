@@ -17,7 +17,7 @@ export default defineConfig({
     // ⭐ API proxy
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: "https://mern-tourism-web-app.onrender.com",
         changeOrigin: true,
         secure: false,
       },

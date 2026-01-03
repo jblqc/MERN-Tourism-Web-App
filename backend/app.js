@@ -51,6 +51,10 @@ app.use((req, res, next) => {
 // View engine
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
+app.use((req, res, next) => {
+  console.log('Origin:', req.headers.origin);
+  next();
+});
 
 // Static files
 app.use(express.static(path.join(__dirname, "public")));

@@ -108,14 +108,7 @@ export default function Packages() {
                 generated directly from our best-rated experiences.
               </Text>
 
-              <HStack spacing={3} pt={4}>
-                <Button colorScheme="purple" size="lg">
-                  Browse Packages
-                </Button>
-                <Button variant="ghost" borderColor="whiteAlpha.300">
-                  How it works
-                </Button>
-              </HStack>
+             
             </VStack>
           </Container>
 

@@ -44,9 +44,7 @@ import Filter from "../components/Filter";
 
 export default function Home() {
   const {
-    filters,
     setFilter,
-    applyFilters,
     clearAllFilters,
     fetchHomepageStats,
     formattedStats,
@@ -54,14 +52,10 @@ export default function Home() {
 
   const {
     tours,
-    featuredTours,
     miniGridTours,
-    countries,
     fetchCountries,
     fetchTours,
-    stats,
     loading,
-    fetchMonthlyPlan,
   } = useTour();
   const loaded = useRef(false);
 

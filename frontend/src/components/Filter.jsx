@@ -178,7 +178,7 @@ export default function Filter({ mode = "home" }) {
                 <Tab color="white" onClick={() => navigate("/tours")}>
                   Tours
                 </Tab>
-                <Tab color="white">Packages</Tab>
+                <Tab color="white"  onClick={() => navigate("/packages")}>Packages</Tab>
               </TabList>
 
               <Icon

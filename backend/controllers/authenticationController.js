@@ -271,10 +271,15 @@ exports.sendEmailCode = catchAsync(async (req, res, next) => {
   user.emailLoginExpires = Date.now() + 10 * 60 * 1000;
   await user.save({ validateBeforeSave: false });
 
-  await new Email(user, null).sendLoginCode(code);
-
-  res.status(200).json({ status: "success", message: "Login code sent!" });
+  try {
+    await new Email(user, null).sendLoginCode(code);
+    res.status(200).json({ status: "success", message: "Login code sent!" });
+  } catch (err) {
+    console.error("EMAIL SEND FAILED:", err); // <-- add this
+    next(new AppError("Error sending email", 500));
+  }
 });
+
 
 exports.verifyEmailCode = catchAsync(async (req, res, next) => {
   const { email, code } = req.body;

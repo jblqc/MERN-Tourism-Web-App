@@ -21,8 +21,8 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     mode: "payment",
 
     // 👉 redirect only for UX
-    success_url: `http://localhost:5173/me?success=true`,
-    cancel_url: `http://localhost:5173/tours/${tour.slug}`,
+    success_url: `https://mern-tourism-web-app-fe.onrender.com/me?success=true`,
+    cancel_url: `https://mern-tourism-web-app-fe.onrender.com/tours/${tour.slug}`,
 
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,

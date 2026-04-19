@@ -20,7 +20,10 @@ export default function TourCard({ tour }) {
 
   // SAFE IMAGE SELECTION
   const imgSrc =
-    tour.imageCover?.startsWith("http") || tour.cover?.startsWith("http")
+    tour.imageCover?.startsWith("http") ||
+    tour.imageCover?.startsWith("/") ||
+    tour.cover?.startsWith("http") ||
+    tour.cover?.startsWith("/")
       ? tour.imageCover || tour.cover
       : tour.imageCover
       ? `/img/tours/${tour.imageCover}`

@@ -10,7 +10,7 @@ export const useTour = () => {
     loading: loadingTour,
     error,
     fetchTours,
-    fetchTour: fetchTourBySlug,
+    fetchTourBySlug,
     fetchTourById,
     setCurrentTour,
     fetchCountries,

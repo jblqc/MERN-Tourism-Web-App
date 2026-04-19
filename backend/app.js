@@ -23,33 +23,32 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
 
 const app = express();
+const allowedOrigins = (process.env.CORS_ORIGIN || process.env.FRONTEND_URL || "http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 // ---------- CORS ----------
 app.use(
-  cors({
-    origin: [
-      "https://mern-tourism-web-app-fe.onrender.com", // deployed frontend
-      "http://localhost:5173",                         // local dev frontend
-    ],
-    credentials: true,
-  })
+    cors({
+        origin: allowedOrigins,
+        credentials: true,
+    }),
 );
-
-
-// ---------- Security ----------
+// Disable only the things that break Google Login
 app.use(
-  helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false,
-    crossOriginResourcePolicy: false,
-    frameguard: false,
-  })
+    helmet({
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+        crossOriginOpenerPolicy: false,
+        crossOriginResourcePolicy: false,
+        frameguard: false,
+    }),
 );
 app.use((req, res, next) => {
-  res.removeHeader("Cross-Origin-Opener-Policy");
-  res.removeHeader("Cross-Origin-Embedder-Policy");
-  next();
+    res.removeHeader("Cross-Origin-Opener-Policy");
+    res.removeHeader("Cross-Origin-Embedder-Policy");
+    next();
 });
 
 // ---------- View engine ----------
@@ -61,25 +60,19 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ---------- Logging ----------
 if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
+    app.use(morgan("dev"));
 }
 
 // ---------- Rate Limiting ----------
 app.use(
-  "/api",
-  rateLimit({
-    max: 1000,
-    windowMs: 60 * 60 * 1000,
-    message: "Too many requests from this IP, please try again in an hour!",
-  })
+    "/api",
+    rateLimit({
+        max: 1000,
+        windowMs: 60 * 60 * 1000,
+        message: "Too many requests from this IP, please try again in an hour!",
+    }),
 );
-
-// ---------- Stripe webhook ----------
-app.post(
-  "/webhook/stripe",
-  express.raw({ type: "application/json" }),
-  stripeController.webhookCheckout
-);
+app.post("/webhook/stripe", express.raw({ type: "application/json" }), stripeController.webhookCheckout);
 
 // ---------- Body parser ----------
 app.use(express.json({ limit: "10kb" }));
@@ -92,24 +85,18 @@ app.use(xss());
 
 // ---------- Prevent parameter pollution ----------
 app.use(
-  hpp({
-    whitelist: [
-      "duration",
-      "ratingsQuantity",
-      "ratingsAverage",
-      "maxGroupSize",
-      "difficulty",
-      "price",
-    ],
-  })
+    hpp({
+        whitelist: ["duration", "ratingsQuantity", "ratingsAverage", "maxGroupSize", "difficulty", "price"],
+    }),
 );
 app.use(compression());
 
 // ---------- Custom middleware ----------
 app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  res.locals.STRIPE_PUBLIC_KEY = process.env.STRIPE_PUBLIC_KEY;
-  next();
+    req.requestTime = new Date().toISOString();
+    res.locals.STRIPE_PUBLIC_KEY = process.env.STRIPE_PUBLIC_KEY;
+
+    next();
 });
 
 // ---------- Routers ----------
@@ -122,7 +109,7 @@ app.use("/api/v1/packages", packageRouter);
 
 // ---------- Handle unhandled routes ----------
 app.all("*", (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
+    next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 
 // ---------- Global error handler ----------

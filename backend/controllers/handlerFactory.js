@@ -3,6 +3,7 @@ const catchAsync = require("../utils/catchAsync");
 const APIFeatures = require("../utils/apiFeatures");
 const formatDoc = (doc) => {
   if (!doc) return doc;
+  if (Array.isArray(doc)) return doc.map((item) => formatDoc(item));
   if (typeof doc.toClient === "function") return doc.toClient();
   return doc;
 };

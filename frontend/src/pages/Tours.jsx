@@ -2,14 +2,12 @@ import {
   Box,
   Container,
   Heading,
+  Skeleton,
+  SkeletonText,
   Text,
   SimpleGrid,
-  Input,
-  Select,
-  Button,
 } from "@chakra-ui/react";
 import { useEffect } from "react";
-import { FiSearch } from "react-icons/fi";
 import { useTour } from "../hooks/useTours";
 import { useFilter } from "../hooks/useFilter";
 import TourCard from "../components/TourCard";
@@ -28,7 +26,18 @@ export default function Tours() {
   //   clearAllFilters();
   // }, []);
 
-  const { tours, countries, loading: loadingTours } = useTour();
+  const { tours, countries, loading: loadingTours, fetchTours, fetchCountries } =
+    useTour();
+
+  useEffect(() => {
+    if (!tours.length) {
+      fetchTours();
+    }
+
+    if (!countries.length) {
+      fetchCountries();
+    }
+  }, [countries.length, fetchCountries, fetchTours, tours.length]);
 
   const usingFilters = Object.values(filters).some((v) => v !== "");
   const results = usingFilters ? filteredTours : tours;
@@ -49,7 +58,15 @@ export default function Tours() {
 
         <Container maxW="7xl">
           {loading ? (
-            <Text>Loading...</Text>
+            <SimpleGrid columns={[1, 2, 3]} spacing={8}>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Box key={index} p={5} bg="white" borderRadius="2xl" boxShadow="lg">
+                  <Skeleton h="220px" borderRadius="xl" mb={5} />
+                  <Skeleton h="22px" mb={3} />
+                  <SkeletonText noOfLines={3} spacing={3} />
+                </Box>
+              ))}
+            </SimpleGrid>
           ) : results.length === 0 ? (
             <Text>No tours match your filters.</Text>
           ) : (

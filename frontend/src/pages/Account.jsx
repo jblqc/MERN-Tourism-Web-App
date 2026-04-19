@@ -260,8 +260,9 @@ useEffect(() => {
           </GridItem>
 
           {/* ------------------------- MAIN CONTENT ------------------------- */}
-          <GridItem>
-            <VStack spacing={10}>
+        <GridItem h="calc(100vh - 110px)">
+  <VStack spacing={6} h="100%" align="stretch">
+
 
  {tab === "profile" && (
   <>
@@ -451,6 +452,22 @@ useEffect(() => {
                   )}
                 </MotionBox>
               )}
+{tab === "reviews" && (
+  <MotionBox
+    sx={glass}
+    bg={glassBg}
+    p={6}
+    w="100%"
+    h="100%"
+    overflowY="auto"
+  >
+    <Heading size="lg" mb={6}>
+      My Reviews
+    </Heading>
+
+    {/* reviews list here */}
+  </MotionBox>
+)}
 
             </VStack>
           </GridItem>

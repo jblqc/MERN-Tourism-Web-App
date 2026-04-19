@@ -127,6 +127,7 @@ isFeatured: { type: Boolean, default: false },
   }
 );
 tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ country: 1 });
 tourSchema.index({ startLocation: "2dsphere" });
 
 tourSchema.virtual("durationWeeks").get(function () {
@@ -163,20 +164,8 @@ tourSchema.pre("save", function (next) {
 // runs before the query is executed
 
 tourSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: "guides",
-    select: "-__v",
-  });
-  next();
-});
-tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
-  next();
-});
-
-tourSchema.post(/^find/, function (docs, next) {
-  console.log("Current query took", Date.now() - this.start, "ms");
   next();
 });
 

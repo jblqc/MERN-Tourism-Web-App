@@ -22,7 +22,7 @@ import {
 import { FiSearch } from "react-icons/fi";
 import { MdFilterAltOff } from "react-icons/md";
 import { DateRange } from "react-date-range";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFilter } from "../hooks/useFilter";
 import { useTour } from "../hooks/useTours";
 import { useNavigate } from "react-router-dom";
@@ -40,6 +40,7 @@ export default function Filter({ mode = "home" }) {
   const navigate = useNavigate();
 
   const [openCalendar, setOpenCalendar] = useState(false);
+  const firstToursRender = useRef(true);
   const [range, setRange] = useState([
     {
       startDate: new Date(),
@@ -49,6 +50,23 @@ export default function Filter({ mode = "home" }) {
   ]);
 
   const hasFilters = Object.values(filters).some((v) => v !== "");
+
+  useEffect(() => {
+    if (mode !== "tours") return undefined;
+
+    if (firstToursRender.current) {
+      firstToursRender.current = false;
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      if (hasFilters) {
+        applyFilters();
+      }
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [applyFilters, filters, hasFilters, mode]);
 
   const content = (
     <>

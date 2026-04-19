@@ -306,15 +306,21 @@ useEffect(() => {
 
                       {/* Verify Button */}
                       {!phoneVerified ? (
-                        <Button
-                          mt={2}
-                          size="sm"
-                          leftIcon={<FiPhone />}
-                          colorScheme="purple"
-                          onClick={() => setIsModalOpen(true)}
-                        >
-                          Verify Phone Number
-                        </Button>
+                        <>
+                          <Button
+                            mt={2}
+                            size="sm"
+                            leftIcon={<FiPhone />}
+                            colorScheme="purple"
+                            onClick={() => setIsModalOpen(true)}
+                          >
+                            Verify Phone Number
+                          </Button>
+                          <Text mt={2} fontSize="sm" color="gray.500">
+                            Phone verification is currently limited to test
+                            accounts during this release.
+                          </Text>
+                        </>
                       ) : (
                         <Text mt={2} fontSize="sm" color="green.500">
                           ✔ Phone Verified

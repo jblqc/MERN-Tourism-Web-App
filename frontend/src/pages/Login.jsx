@@ -280,20 +280,25 @@ export default function AuthPage() {
                                         Send code to email
                                     </Button>
 
-                                    <Button
-                                        variant="outline"
-                                        leftIcon={<MdSms />}
+                                <Button
+                                    variant="outline"
+                                    leftIcon={<MdSms />}
                                         h="48px"
                                         w="100%"
                                         borderRadius="xl"
                                         justifyContent="center"
                                         iconSpacing={3}
                                         onClick={() => resetVerificationModal("sms")}
-                                    >
-                                        Send code to SMS
-                                    </Button>
+                                >
+                                    Send code to SMS
+                                </Button>
 
-                                    <HStack>
+                                <Text fontSize="sm" color="gray.500" lineHeight="1.6">
+                                    SMS login is currently limited to test accounts while
+                                    phone verification is still in rollout.
+                                </Text>
+
+                                <HStack>
                                         <Divider />
                                         <Text fontSize="sm" color="gray.400" whiteSpace="nowrap">
                                             or use password

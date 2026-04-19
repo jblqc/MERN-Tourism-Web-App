@@ -13,6 +13,11 @@ export const getTourById = async (id) => {
   return res.data.data.data;
 };
 
+export const getTourBySlug = async (slug) => {
+  const res = await axiosClient.get(`/tours/slug/${slug}`);
+  return res.data.data.tour;
+};
+
 // PATCH update tour
 export const updateTour = async (id, body) => {
   const res = await axiosClient.patch(`/tours/${id}`, body);

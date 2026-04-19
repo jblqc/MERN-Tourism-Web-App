@@ -42,15 +42,19 @@ export const useUserStore = create(
          * INIT — runs automatically on app load
          * ------------------------------------------------ */
         init: async () => {
-          const { ready } = get();
+          const { ready, token, user } = get();
           if (ready) return;
 
-          const token = get().token;
-
           if (!token) {
-            set({ ready: true, isLoggedIn: false });
+            set({ ready: true, isLoggedIn: false, user: null });
             return;
           }
+
+          set({
+            ready: true,
+            isLoggedIn: true,
+            user: user || null,
+          });
 
           try {
             const me = await getMe();

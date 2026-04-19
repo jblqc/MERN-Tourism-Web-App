@@ -2,6 +2,7 @@
 import {
   HStack,
   VStack,
+  Stack,
   Avatar,
   Text,
   Icon,
@@ -19,7 +20,6 @@ import {
 } from "@chakra-ui/react";
 import { FiStar } from "react-icons/fi";
 import { motion } from "framer-motion";
-import GlassBox from "./GlassBox";
 
 export default function ReviewCard({ review }) {
   if (!review || !review.user) return null;
@@ -36,19 +36,25 @@ export default function ReviewCard({ review }) {
         whileHover={{
           backgroundColor: useColorModeValue("#f9fafb", "#1a202c"),
         }}
-        borderRadius="md"
+        borderRadius="xl"
         py={4}
-        px={2}
+        px={{ base: 0, md: 2 }}
         cursor="pointer"
         onClick={onOpen}
         transition="0.2s"
       >
-        <HStack w="100%" justify="space-between" spacing={6}>
-          <HStack spacing={4} flex="1">
+        <Stack
+          w="100%"
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          spacing={{ base: 3, md: 6 }}
+        >
+          <HStack spacing={4} flex="1" align="flex-start">
             <Avatar
               src={`/img/users/${review.user.photo}`}
               name={review.user.name}
               size="md"
+              flexShrink={0}
             />
             <VStack align="flex-start" spacing={0}>
               <Text fontWeight="bold">{review.user.name}</Text>
@@ -65,15 +71,19 @@ export default function ReviewCard({ review }) {
               fontSize="md"
               color={textColor}
               lineHeight="1.6"
-              ml={6}
               flex="1"
-              noOfLines={1}
+              noOfLines={{ base: 2, md: 1 }}
             >
               {review.review}
             </Text>
           </HStack>
 
-          <HStack spacing={1} minW="120px" justify="flex-end">
+          <HStack
+            spacing={1}
+            minW={{ base: "auto", md: "120px" }}
+            justify={{ base: "flex-start", md: "flex-end" }}
+            pl={{ base: 16, md: 0 }}
+          >
             {[1, 2, 3, 4, 5].map((star) => (
               <Icon
                 key={star}
@@ -84,7 +94,7 @@ export default function ReviewCard({ review }) {
               />
             ))}
           </HStack>
-        </HStack>
+        </Stack>
       </MotionBox>
 
       <Divider />
@@ -111,7 +121,12 @@ export default function ReviewCard({ review }) {
           </ModalHeader>
           <ModalCloseButton color="white" />
           <ModalBody p={6}>
-            <HStack align="center" spacing={4} mb={4}>
+            <Stack
+              direction={{ base: "column", md: "row" }}
+              align={{ base: "flex-start", md: "center" }}
+              spacing={4}
+              mb={4}
+            >
               <Avatar
                 src={`/img/users/${review.user.photo}`}
                 name={review.user.name}
@@ -140,7 +155,7 @@ export default function ReviewCard({ review }) {
                   />
                 ))}
               </HStack>
-            </HStack>
+            </Stack>
 
             <Text fontSize="md" color={textColor} lineHeight="1.8">
               {review.review}

@@ -25,6 +25,8 @@ import {
   ModalBody,
   ModalFooter,
   Flex,
+  Skeleton,
+  SkeletonText,
 } from "@chakra-ui/react";
 import { useEffect, useRef } from "react";
 import { FiSearch, FiStar } from "react-icons/fi";
@@ -34,7 +36,7 @@ import { useFilter } from "../hooks/useFilter";
 import { useState } from "react";
 import TourCard from "../components/TourCard";
 import GlassBox from "../components/GlassBox";
-import { useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useTourStore } from "../store/useTourStore";
 import { DateRange } from "react-date-range";
 import "react-date-range/dist/styles.css";
@@ -147,19 +149,6 @@ const success = new URLSearchParams(window.location.search).get("success");
     </VStack>
   );
 
-  if (loading)
-    return (
-      <Container textAlign="center" py={10}>
-        <Text>Loading tours...</Text>
-      </Container>
-    );
-
-  if (!tours.length)
-    return (
-      <Container textAlign="center" py={10}>
-        <Text>No tours available.</Text>
-      </Container>
-    );
   return (
     <Box>
       {/* HERO SECTION */}
@@ -293,6 +282,10 @@ const success = new URLSearchParams(window.location.search).get("success");
                 {countryFlag(c.country)} {c.country}
               </Box>
             ))
+          ) : loading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} h="40px" w="130px" borderRadius="full" />
+            ))
           ) : (
             <Text>No country data available</Text>
           )}
@@ -304,9 +297,23 @@ const success = new URLSearchParams(window.location.search).get("success");
         </Heading>
 
         <SimpleGrid columns={[1, 3]} spacing={6}>
-          {formattedStats?.topRatedTours?.map((tour) => (
-            <TourCard key={tour._id} tour={tour} />
-          ))}
+          {formattedStats?.topRatedTours?.length
+            ? formattedStats.topRatedTours.map((tour) => (
+                <TourCard key={tour._id} tour={tour} />
+              ))
+            : Array.from({ length: 3 }).map((_, index) => (
+                <Box
+                  key={index}
+                  p={6}
+                  borderRadius="2xl"
+                  bg="white"
+                  boxShadow="lg"
+                >
+                  <Skeleton h="220px" borderRadius="xl" mb={5} />
+                  <Skeleton h="22px" mb={3} />
+                  <SkeletonText noOfLines={3} spacing={3} />
+                </Box>
+              ))}
         </SimpleGrid>
       </Container>
 
@@ -372,61 +379,69 @@ const success = new URLSearchParams(window.location.search).get("success");
           {/* Right Grid */}
           <GridItem>
             <SimpleGrid columns={[1, 2]} spacing={10} h="100%">
-              {miniGridTours.map((tour) => (
-                <Box
-                  key={tour._id}
-                  bg="white"
-                  onClick={() => handleClick(tour)} // ★ FIX
-                  _hover={{
-                    transform: "translateY(-3px)",
-                    transition: "0.3s",
-                  }}
-                >
-                  <Box position="relative">
-                    <Image
-                      src={tour.imageCover}
-                      alt={tour.name}
-                      fallbackSrc={defaultImg}
-                      w="100%"
-                      h="100%"
-                      objectFit="cover"
-                      borderRadius={15}
-                    />
+              {miniGridTours.length
+                ? miniGridTours.map((tour) => (
                     <Box
-                      position="absolute"
-                      top="10px"
-                      right="10px"
+                      key={tour._id}
                       bg="white"
-                      px={2.5}
-                      py={1}
-                      borderRadius="full"
-                      display="flex"
-                      alignItems="center"
-                      gap={1}
-                      boxShadow="sm"
+                      onClick={() => handleClick(tour)}
+                      _hover={{
+                        transform: "translateY(-3px)",
+                        transition: "0.3s",
+                      }}
                     >
-                      <Icon as={FiStar} color="yellow.400" boxSize={4} />
-                      <Text fontWeight="bold" fontSize="sm">
-                        {tour.ratingsAverage?.toFixed(1) || "4.9"}
-                      </Text>
-                    </Box>
-                  </Box>
+                      <Box position="relative">
+                        <Image
+                          src={tour.imageCover}
+                          alt={tour.name}
+                          fallbackSrc={defaultImg}
+                          w="100%"
+                          h="100%"
+                          objectFit="cover"
+                          borderRadius={15}
+                        />
+                        <Box
+                          position="absolute"
+                          top="10px"
+                          right="10px"
+                          bg="white"
+                          px={2.5}
+                          py={1}
+                          borderRadius="full"
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
+                          boxShadow="sm"
+                        >
+                          <Icon as={FiStar} color="yellow.400" boxSize={4} />
+                          <Text fontWeight="bold" fontSize="sm">
+                            {tour.ratingsAverage?.toFixed(1) || "4.9"}
+                          </Text>
+                        </Box>
+                      </Box>
 
-                  <Box px={4} py={4}>
-                    <HStack justify="space-between" mb={1}>
-                      <Heading fontSize="md" noOfLines={1}>
-                        {tour.name}
-                      </Heading>
-                      <Text fontWeight="semibold" color="gray.700">
-                        ${tour.price.toLocaleString()}
-                      </Text>
-                    </HStack>
-                    <Text fontSize="sm" color="gray.500" noOfLines={2}>
-                      {tour.summary}
-                    </Text>
-                  </Box>
-                </Box>
-              ))}
+                      <Box px={4} py={4}>
+                        <HStack justify="space-between" mb={1}>
+                          <Heading fontSize="md" noOfLines={1}>
+                            {tour.name}
+                          </Heading>
+                          <Text fontWeight="semibold" color="gray.700">
+                            ${tour.price.toLocaleString()}
+                          </Text>
+                        </HStack>
+                        <Text fontSize="sm" color="gray.500" noOfLines={2}>
+                          {tour.summary}
+                        </Text>
+                      </Box>
+                    </Box>
+                  ))
+                : Array.from({ length: 4 }).map((_, index) => (
+                    <Box key={index} bg="white" borderRadius="xl" p={4}>
+                      <Skeleton h="220px" borderRadius="xl" mb={4} />
+                      <Skeleton h="18px" mb={3} />
+                      <SkeletonText noOfLines={2} spacing={3} />
+                    </Box>
+                  ))}
             </SimpleGrid>
           </GridItem>
         </Grid>
@@ -448,7 +463,13 @@ const success = new URLSearchParams(window.location.search).get("success");
           <Heading fontSize={["3xl", "5xl"]}>
             Begin your exciting adventure into nature today.
           </Heading>
-          <Button size="lg" colorScheme="purple" borderRadius={"full"}>
+          <Button
+            as={RouterLink}
+            to="/login?mode=signup"
+            size="lg"
+            colorScheme="purple"
+            borderRadius="full"
+          >
             Sign Up
           </Button>
         </VStack>

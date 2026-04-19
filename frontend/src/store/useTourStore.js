@@ -3,6 +3,7 @@ import { devtools, persist } from "zustand/middleware";
 import {
   getAllTours,
   getTourById,
+  getTourBySlug,
   getTop5Cheap,
   getMonthlyPlan,
   getTourStats,
@@ -52,9 +53,24 @@ export const useTourStore = create(
           try {
             const res = await getTourById(id);
             set({ currentTour: res });
-            return res.data.doc;
+            return res;
           } catch (err) {
             set({ error: err.message });
+            return null;
+          } finally {
+            set({ loading: false });
+          }
+        },
+
+        fetchTourBySlug: async (slug) => {
+          set({ loading: true });
+          try {
+            const res = await getTourBySlug(slug);
+            set({ currentTour: res });
+            return res;
+          } catch (err) {
+            set({ error: err.message });
+            return null;
           } finally {
             set({ loading: false });
           }

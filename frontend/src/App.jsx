@@ -11,16 +11,13 @@ import Packages from "./pages/Packages";
 import Login from "./pages/Login";
 import Account from "./pages/Account";
 import ErrorPage from "./pages/ErrorPage";
-import FullPageLoader from "./components/FullPageLoader";
 
 function App() {
-  const { ready, init } = useUserStore();
+  const { init } = useUserStore();
 
   useEffect(() => {
     init();
   }, []);
-
-  if (!ready) return <FullPageLoader />;
 
   return (
     <Routes>

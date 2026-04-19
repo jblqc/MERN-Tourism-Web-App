@@ -4,6 +4,7 @@ const AppError = require("../utils/appError");
 const Booking = require("../models/bookingModel");
 const catchAsync = require("../utils/catchAsync");
 const factory = require("./handlerFactory");
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
 /* ======================================================
    CREATE STRIPE CHECKOUT SESSION
@@ -14,15 +15,13 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     return next(new AppError("No tour found with that ID", 404));
   }
 
-  console.log("➡️ getCheckoutSession REQ.USER =", req.user);
-
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
 
     // 👉 redirect only for UX
-    success_url: `http://localhost:5173/me?success=true`,
-    cancel_url: `http://localhost:5173/tours/${tour.slug}`,
+    success_url: `${frontendUrl}/me?success=true`,
+    cancel_url: `${frontendUrl}/tour/${tour.slug}`,
 
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,

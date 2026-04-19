@@ -4,15 +4,24 @@ import App from "./App.jsx";
 import { ChakraProvider } from "@chakra-ui/react";
 import { BrowserRouter } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { appConfig } from "./config/env";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+const appTree = (
   <React.StrictMode>
     <ChakraProvider>
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </GoogleOAuthProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </ChakraProvider>
   </React.StrictMode>
+);
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  appConfig.googleClientId ? (
+    <GoogleOAuthProvider clientId={appConfig.googleClientId}>
+      {appTree}
+    </GoogleOAuthProvider>
+  ) : (
+    appTree
+  )
 );

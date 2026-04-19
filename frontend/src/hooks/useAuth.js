@@ -1,5 +1,6 @@
 // src/hooks/useAuth.js
 import { useUserStore } from "../store/useUserStore";
+import { appConfig } from "../config/env";
 
 export const useAuth = () => {
   const {
@@ -31,15 +32,15 @@ export const useAuth = () => {
        Google Button
   ------------------------- */
   const initGoogleLoginButton = (onSuccess) => {
-    if (!window.google?.accounts?.id) return;
+    if (!appConfig.googleClientId || !window.google?.accounts?.id) return false;
 
     window.google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      client_id: appConfig.googleClientId,
       callback: onSuccess,
     });
 
     const btn = document.getElementById("google-btn");
-    if (!btn) return;
+    if (!btn) return false;
     btn.innerHTML = "";
 
     window.google.accounts.id.renderButton(btn, {
@@ -48,6 +49,8 @@ export const useAuth = () => {
       size: "large",
       width: Math.floor(btn.offsetWidth),
     });
+
+    return true;
   };
 
   return {
